@@ -1,0 +1,19 @@
+.apexcharts-menu-item {
+  font-family: 'Nunito Sans';
+  color: black;
+  display: flex;
+  justify-content: center;
+}
+
+.apexcharts-selected svg{
+  fill: #00A94D !important;
+  stroke: none !important;
+}
+
+body{
+  font-family: 'Nunito Sans' !important;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}

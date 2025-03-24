@@ -1,0 +1,117 @@
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/config:/etc/nginx/conf.d/
+      - ./nginx/logs:/var/log/nginx/
+      - ./backend/certs/:/etc/nginx/ssl/:ro
+      - ./frontend/dist/:/usr/share/nginx/html/
+    links:
+      - ui-rfsight
+    networks:
+      - frontend
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  api-rfsight:
+    build: ./backend
+    container_name: api-rfsight
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - mongo
+    ports:
+      - 6792:6792
+    network_mode: host
+    entrypoint: [ "python3", "./app.py" ]
+    restart: unless-stopped
+
+  ui-rfsight:
+    build: ./frontend
+    container_name: ui-rfsight
+    ports:
+      - 6791:6791
+      - 4173:4173
+    networks:
+      - frontend
+    volumes:
+      - ./frontend:/app
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=lockRFSight
+    volumes:
+      - mongodb-data-rfsight:/data/db
+      - ./backend/src/database/mongo-init:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - db_network
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=lockRFSight
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=lockMEAdmin
+    volumes:
+      - mongodb-data-rfsight:/data/db
+    ports:
+      - 3046:8081
+    links:
+      - mongo
+    networks:
+      - db_network
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  # ONLY FOR DEVELOPMENT
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      # Change the number before : to the port the web interface should be accessible on
+      - '5000:80'
+      # Change the number before : to the port the SMTP server should be accessible on
+      - '25:25'
+      # Change the number before : to the port the IMAP server should be accessible on
+      - '143:143'
+    volumes:
+      # This is where smtp4dev stores the database..
+      - smtp4dev-data:/smtp4dev
+    environment:
+      #Specifies the URLs the web UI will use inside the container.
+      - ServerOptions__Urls=http://*:80
+
+      #Specifies the server hostname. Used in auto-generated TLS certificate if enabled.
+      - ServerOptions__HostName=smtp4dev
+
+networks:
+  db_network:
+    driver: bridge
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+volumes:
+  mongodb-data-rfsight:
+
+  smtp4dev-data:
+
+
