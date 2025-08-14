@@ -9,7 +9,7 @@ export const DashboardPage = () => {
 
   return (
     <Grid container gap={3} justifyContent="center" flexDirection="column">
-      <Grid item>
+      <Grid>
         {userInfo ? (
           userInfo?.organizationId ? (
             <DashboardGraphs organizationId={userInfo.organizationId} />

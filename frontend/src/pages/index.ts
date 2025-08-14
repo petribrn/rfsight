@@ -6,3 +6,4 @@ export * from './ForgotPassword';
 export * from './Networks';
 export * from './Register';
 export * from './ResetPassword';
+export * from './Templates';

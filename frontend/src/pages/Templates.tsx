@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import {
   Backdrop,
   Breadcrumbs,
@@ -8,21 +9,24 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { DeviceAdoptionDialog, DeviceList } from '../shared/components';
-import { BreadcrumbLink } from '../shared/components/BreadcrumbLink';
+import {
+  BreadcrumbLink,
+  NetworkCreationDialog,
+  NetworkList,
+} from '../shared/components';
 import { useAppSelector } from '../shared/hooks';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
 
-export const DevicesPage = () => {
-  const [openAdoptionDialog, setOpenAdoptionDialog] = useState(false);
+export const TemplatesPage = () => {
+  const [openCreationDialog, setOpenCreationDialog] = useState(false);
   const userInfo = useAppSelector(selectUserInfo);
 
-  const handleOpenAdoptionDialog = () => {
-    setOpenAdoptionDialog(true);
+  const handleOpenCreationDialog = () => {
+    setOpenCreationDialog(true);
   };
 
-  const handleCloseAdoptionDialog = () => {
-    setOpenAdoptionDialog(false);
+  const handleCloseCreationDialog = () => {
+    setOpenCreationDialog(false);
   };
 
   return (
@@ -30,30 +34,30 @@ export const DevicesPage = () => {
       <Grid>
         <Breadcrumbs aria-label="breadcrumb">
           <BreadcrumbLink to="/dashboard">Home</BreadcrumbLink>
-          <Typography color="text.primary">Dispositivos</Typography>
+          <Typography color="text.primary">Templates</Typography>
         </Breadcrumbs>
       </Grid>
       <Grid>
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>
-              <DeviceList organizationId={userInfo.organizationId} />
+              <NetworkList organizationId={userInfo.organizationId} />
               <Button
                 variant="contained"
                 sx={{
                   width: { xs: '100%', sm: '40%', md: '35%', lg: '25%' },
                   mt: 2,
                 }}
-                onClick={handleOpenAdoptionDialog}
+                onClick={handleOpenCreationDialog}
               >
-                Adotar dispositivo
+                Criar template
               </Button>
             </Paper>
-            <DeviceAdoptionDialog
-              open={openAdoptionDialog}
-              handleClose={handleCloseAdoptionDialog}
+            <NetworkCreationDialog
+              open={openCreationDialog}
+              handleClose={handleCloseCreationDialog}
               organizationId={userInfo.organizationId}
-            />{' '}
+            />
           </>
         ) : (
           <Backdrop

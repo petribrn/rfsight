@@ -1,4 +1,4 @@
-import { Box, Grid, Paper, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 
 interface IDownUpStatusProps {
   networks: Array<string>;
@@ -8,31 +8,33 @@ export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
   const theme = useTheme();
   console.log(networks);
   return (
-    <Box justifyContent="center" alignItems="center">
+    <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 3}} height={'100%'}>
       <Paper
         sx={{
-          padding: { xs: 0.5 },
+          padding: { xs: 1 },
           pb: { xs: 2.8 },
           backgroundColor: theme.palette.secondary.main,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}
         elevation={2}
       >
         <Typography align="center" mb="1rem">
           Throughput agregado
         </Typography>
-        <Grid
-          container
-          gap={{ xs: 1, sm: 1, md: 1 }}
-          columns={{ xs: 12 }}
-          justifyContent="center"
-        >
-          <Grid item xs={6} sm={3} md={6}>
-            <Paper
+        <Stack width={'100%'} justifyContent={'center'} alignItems={'center'} direction={'row'} spacing={1} display={'flex'} useFlexGap>
+          <Paper
               variant="outlined"
               sx={{
                 padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
                 backgroundColor: theme.palette.companyExtra.light,
                 opacity: '75%',
+                display: 'flex',
+                flexDirection: 'column',
+                width: '50%'
               }}
             >
               <Box>
@@ -65,14 +67,15 @@ export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
                 </Typography>
               </Box>
             </Paper>
-          </Grid>
-          <Grid item xs={5} sm={3} md={6}>
             <Paper
               variant="outlined"
               sx={{
                 padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
                 backgroundColor: theme.palette.companyExtra.light,
                 opacity: '75%',
+                display: 'flex',
+                flexDirection: 'column',
+                width: '50%'
               }}
             >
               <Typography
@@ -103,9 +106,8 @@ export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
                 Mbps
               </Typography>
             </Paper>
-          </Grid>
-        </Grid>
+        </Stack>
       </Paper>
-    </Box>
+    </Grid>
   );
 };

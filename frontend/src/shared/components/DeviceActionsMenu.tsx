@@ -70,8 +70,10 @@ export const DeviceActionsMenu = (params: GridCellParams) => {
         anchorEl={anchorEl}
         open={menuOpen}
         onClose={handleCloseMenu}
-        MenuListProps={{
-          'aria-labelledby': `action-button-${id}`,
+        slotProps={{
+          list: {
+            'aria-labelledby': `action-button-${id}`,
+          }
         }}
       >
         <MenuItem onClick={handleConfigure}>

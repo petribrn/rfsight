@@ -135,20 +135,20 @@ export const WirelessConfigTab = () => {
           alignContent="left"
           alignItems="left"
         >
-          <Grid item xs={4} display="flex" alignItems="center">
+          <Grid size={{xs: 4}} display="flex" alignItems="center">
             <Typography textAlign="center">Ativar rádio:</Typography>
             <Switch
               checked={radioEnabled}
               onClick={() => setRadioEnabled(!radioEnabled)}
             />
           </Grid>
-          <Grid item xs={2} display="flex" alignItems="center">
+          <Grid size={{xs: 2}} display="flex" alignItems="center">
             <Typography textAlign="center">País:</Typography>
             <Button sx={{ ml: 2 }} variant="contained" color="secondary">
               {country}
             </Button>
           </Grid>
-          <Grid item xs={7} display="flex" alignItems="center" mt={2}>
+          <Grid size={{xs: 7}} display="flex" alignItems="center" mt={2}>
             <Typography textAlign="center">Modo de operação:</Typography>
             <Select
               value={operationMode}
@@ -164,7 +164,7 @@ export const WirelessConfigTab = () => {
             </Select>
           </Grid>
         </Grid>
-        <Grid item xs={3} mt={3}>
+        <Grid size={{xs: 3}} mt={3}>
           <Typography
             color={alpha(theme.palette.text.primary, 0.5)}
             variant="button"
@@ -187,17 +187,17 @@ export const WirelessConfigTab = () => {
           gap={2}
           mt={2}
         >
-          <Grid item xs={6} display="flex" alignItems="center">
+          <Grid size={{xs: 6}} display="flex" alignItems="center">
             <Grid
               container
               spacing={3}
               sx={{ alignItems: 'center' }}
               alignItems="center"
             >
-              <Grid item>
+              <Grid>
                 <Typography textAlign="center">Potência de Tx, dBm:</Typography>
               </Grid>
-              <Grid item md={4}>
+              <Grid size={{md: 4}}>
                 <Slider
                   value={typeof txPower === 'number' ? txPower : 0}
                   max={27}
@@ -207,7 +207,7 @@ export const WirelessConfigTab = () => {
                   aria-labelledby="txpower-slider"
                 />
               </Grid>
-              <Grid item>
+              <Grid>
                 <Input
                   value={txPower}
                   size="small"
@@ -225,7 +225,7 @@ export const WirelessConfigTab = () => {
             </Grid>
           </Grid>
 
-          <Grid item xs={5} display="flex" alignItems="center">
+          <Grid size={{xs: 5}} display="flex" alignItems="center">
             <Typography textAlign="center">Canal: </Typography>
             <Button
               sx={{ ml: 2 }}
@@ -239,7 +239,7 @@ export const WirelessConfigTab = () => {
             </Button>
           </Grid>
 
-          <Grid item xs={7} display="flex" alignItems="center">
+          <Grid size={{xs: 7}} display="flex" alignItems="center">
             <Typography textAlign="center">Ativar atpc:</Typography>
             <Switch checked={atpcOn} onClick={() => setatpcOn(!atpcOn)} />
           </Grid>
@@ -253,19 +253,19 @@ export const WirelessConfigTab = () => {
             gap={2}
             display={{ xs: atpcOn ? 'flex' : 'none' }}
           >
-            <Grid item xs={6} display="flex" alignItems="center">
+            <Grid size={{xs: 6}} display="flex" alignItems="center">
               <Grid
                 container
                 spacing={3}
                 sx={{ alignItems: 'center' }}
                 alignItems="center"
               >
-                <Grid item>
+                <Grid>
                   <Typography textAlign="center">
                     Nível de sinal desejado, dBm:
                   </Typography>
                 </Grid>
-                <Grid item md={4}>
+                <Grid size={{md: 4}}>
                   <Slider
                     value={
                       typeof targetSignalLevel === 'number'
@@ -279,7 +279,7 @@ export const WirelessConfigTab = () => {
                     aria-labelledby="targetSignal-slider"
                   />
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Input
                     value={targetSignalLevel}
                     size="small"
@@ -296,7 +296,7 @@ export const WirelessConfigTab = () => {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={7} display="flex" alignItems="center" mt={2}>
+            <Grid size={{xs: 7}} display="flex" alignItems="center" mt={2}>
               <Typography textAlign="center">Período, ms:</Typography>
               <Input
                 sx={{ ml: 2 }}
@@ -316,7 +316,7 @@ export const WirelessConfigTab = () => {
           </Grid>
         </Grid>
 
-        <Grid item xs={3} mt={3}>
+        <Grid size={{xs: 3}} mt={3}>
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}

@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:22.18.0
 COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 WORKDIR /app

@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   DashboardPage,
@@ -54,6 +55,28 @@ export default function AppRoutes() {
           <Route
             path="/devices"
             element={<PageWithSideMenu pageContent={<DevicesPage />} />}
+          />
+          <Route
+            path="/templates"
+            element={
+              <PageWithSideMenu
+                pageContent={<Typography>Templates</Typography>}
+              />
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PageWithSideMenu pageContent={<Typography>Users</Typography>} />
+            }
+          />
+          <Route
+            path="/organizations"
+            element={
+              <PageWithSideMenu
+                pageContent={<Typography>Organizations</Typography>}
+              />
+            }
           />
           <Route
             path="/devices/:deviceId/configure"

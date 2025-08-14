@@ -31,13 +31,13 @@ export const NetworksPage = () => {
 
   return (
     <Grid container gap={3} justifyContent="center" flexDirection="column">
-      <Grid item>
+      <Grid>
         <Breadcrumbs aria-label="breadcrumb">
           <BreadcrumbLink to="/dashboard">Home</BreadcrumbLink>
           <Typography color="text.primary">Redes</Typography>
         </Breadcrumbs>
       </Grid>
-      <Grid item>
+      <Grid>
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>

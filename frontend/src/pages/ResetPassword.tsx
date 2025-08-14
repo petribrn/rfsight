@@ -32,7 +32,7 @@ export const ResetPasswordPage = () => {
 
   return (
     <PageGridCenteredContainer>
-      <Grid item xs={8} md={6} lg={3}>
+      <Grid size={{xs:8, md:6, lg:3}}>
         <ResetPasswordForm token={token} />
       </Grid>
     </PageGridCenteredContainer>

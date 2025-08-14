@@ -85,8 +85,8 @@ export const NetworkListCustomContextMenu = ({
           onClose={handleCloseMenu}
           anchorEl={target}
           anchorPosition={{ top: mouseY, left: mouseX + 5 }}
-          MenuListProps={{
-            'aria-labelledby': `action-button-${rowData.id}`,
+          slotProps={{
+            list: {'aria-labelledby': `action-button-${rowData.id}`,}
           }}
           onContextMenu={(e) => e.preventDefault()}
         >

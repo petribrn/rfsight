@@ -10,8 +10,8 @@ export * from './ConfigurationForm';
 export * from './ConfirmationDialog';
 export * from './CustomNoResultsOverlay';
 export * from './CustomNoRowsOverlay';
-export * from './Dashboard/ConnectedClientsStatus';
 export * from './Dashboard/ConnectedCPEsChart';
+export * from './Dashboard/ConnectedCPEsStatus';
 export * from './Dashboard/DashboardGraphs';
 export * from './Dashboard/DevicesStatus';
 export * from './Dashboard/OrganizationTabs';
@@ -42,3 +42,4 @@ export * from './styled/FormPaper';
 export * from './styled/PageGridContainer';
 export * from './styled/TabPanelPaper';
 export * from './TabPanel';
+
