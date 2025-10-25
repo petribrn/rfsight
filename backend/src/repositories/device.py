@@ -22,8 +22,13 @@ class DeviceRepository:
     return DeviceCollection(devices=devices)
 
   @classmethod
+  async def list_devices_by_compound_filter(cls, db: DB, compound_filter: dict):
+    devices = await db.devices_collection.find(compound_filter).to_list(1000)
+    return DeviceCollection(devices=devices)
+
+  @classmethod
   async def list_devices_by_filter(cls, db: DB, **filters):
-    if all(x in filters.keys() for x in ['model', 'fw_version', 'location', 'networkId', 'createdAt', 'updatedAt']):
+    if all(x in filters.keys() for x in ['model', 'fw_version', 'location', 'networkId', 'profileId', 'createdAt', 'updatedAt']):
       raise http_exceptions.INVALID_FIELD(field=f'campo de filtro de dispositivo')
     devices = await db.devices_collection.find(filters).to_list(1000)
     return DeviceCollection(devices=devices)
@@ -134,6 +139,17 @@ class DeviceRepository:
 
     removed_devices_network = await db.devices_collection.update_many(db_filter, {'$set': {'networkId': None}})
     return removed_devices_network.acknowledged
+
+  @classmethod
+  async def remove_devices_profile(cls, db: DB, profileId: ObjectId, devices: List[ObjectId] = None):
+    db_filter = {}
+    if devices:
+      db_filter.update({'_id': {'$in': devices}})
+    else:
+      db_filter.update({'profileId': str(profileId)})
+
+    removed_devices_profile = await db.profiles_collection.update_many(db_filter, {'$set': {'profileId': None, 'is_active': False}})
+    return removed_devices_profile.acknowledged
 
   @classmethod
   async def remove_all_network_devices(cls, db: DB, network_id: ObjectId):

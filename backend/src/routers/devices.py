@@ -22,6 +22,7 @@ from src.repositories.configuration import ConfigurationRepository
 from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
+from src.repositories.profile import ProfileRepository
 from src.services.oauth import get_current_user
 from src.shared.utils import validate_id
 from sse_starlette import EventSourceResponse
@@ -36,26 +37,38 @@ adoption_controller.start()
 config_controller = ConfigController()
 
 @router.get('/list', status_code=status.HTTP_200_OK, response_model=DeviceCollection, response_model_by_alias=False)
-async def devices(organizationId: str, networkId: str = None, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
+async def devices(organizationId: str, networkId: str = None, profileId: str = None, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
+    organizationId = validate_id(target_id=organizationId, id_field_name='organizationId')
+
     existent_organization = await OrganizationRepository.get_organization_by(db, field='_id', value=organizationId)
     if not existent_organization:
       raise http_exceptions.DOCUMENT_INEXISTENT(document='organização')
 
+    device_filter = {}
     if networkId:
+      networkId = validate_id(target_id=networkId, id_field_name='networkId')
       if networkId not in existent_organization.networks:
         raise http_exceptions.DOCUMENT_INEXISTENT(document='rede')
       networks_filter = [x for x in existent_organization.networks if x == networkId]
+      device_filter.update({'networkId': {'$in': networks_filter}})
     else:
       networks_filter = existent_organization.networks
+      device_filter.update({'networkId': {'$in': networks_filter}})
+
+    if profileId:
+      profileId = validate_id(target_id=profileId, id_field_name='profileId')
+      device_filter.update({'profileId': profileId})
 
     # Returns the entire collection of devices
-    device_collection = await DeviceRepository.list_devices_by_networks(db, networks=networks_filter)
+    device_collection = await DeviceRepository.list_devices_by_compound_filter(db, compound_filter=device_filter)
     return device_collection
   except HTTPException as h:
     raise h
   except Exception as e:
     raise http_exceptions.INTERNAL_ERROR(detail=str(e))
+
+# TODO: LIST DEVICES BY PROFILE
 
 @router.post('/adopt', status_code=status.HTTP_201_CREATED)
 async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
@@ -80,10 +93,18 @@ async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = De
     device_config = Configuration(configs=config)
 
     if device.networkId:
-      # Check if organization exists
+      # Check if network exists
       device_network = await NetworkRepository.get_network_by(db, field='_id', value=device.networkId)
       if not device_network:
         raise http_exceptions.DOCUMENT_INEXISTENT(document='rede do dispositivo')
+
+    if device.profileId:
+      # Check if profile exists
+      device_profile = await ProfileRepository.get_profile_by(db, field='_id', value=device.profileId)
+      if not device_profile:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document='profile do dispositivo')
+    else:
+      device.is_active = False
 
     # Create a new device document
     new_device_id = await DeviceRepository.create_device(db, new_device_data=device)

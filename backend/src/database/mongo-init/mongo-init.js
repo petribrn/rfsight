@@ -14,5 +14,6 @@ db.createUser({
 db.createCollection("users")
 db.createCollection("devices")
 db.createCollection("configurations")
+db.createCollection("profiles")
 db.createCollection("networks")
 db.createCollection("organizations")

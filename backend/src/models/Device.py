@@ -23,6 +23,7 @@ class DeviceToAdopt(BaseModel):
   user: str = Field(default='admin')
   password: str = Field(default='admin')
   networkId: PyObjectId | None = Field(default=None)
+  profileId: PyObjectId | None = Field(default=None)
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):
@@ -71,9 +72,26 @@ class DeviceToAdopt(BaseModel):
         {'networkId': value},
       )
 
+  @field_validator('profileId')
+  def validate_profileId(cls, value):
+    if value is None:
+      return value
+    try:
+      is_valid_id = ObjectId.is_valid(value)
+      if not is_valid_id:
+        raise Exception
+      return value
+    except Exception as e:
+      raise PydanticCustomError(
+        'invalid_profileId_error',
+        'O profileId do dispositivo é inválido.',
+        {'profileId': value},
+      )
+
 
 class Device(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
+  is_active: bool = Field(default=None)
   name: str = Field(min_length=3)
   mac_address: str = Field(min_length=12)
   ip_address: str = Field(...)
@@ -83,6 +101,7 @@ class Device(BaseModel):
   fw_version: str = Field(min_length=1)
   location: str = Field(min_length=3)
   networkId: PyObjectId | None = Field(default=None)
+  profileId: PyObjectId | None = Field(default=None)
   configId: PyObjectId | None = Field(default=None)
   createdAt: datetime | None = Optional[Field(...)]
   updatedAt: datetime | None = Optional[Field(...)]
@@ -93,6 +112,17 @@ class Device(BaseModel):
       return datetime.fromisoformat(v).astimezone(tzinfo=pytz.timezone('America/Sao_Paulo'))
     return v
 
+  @field_validator('is_active')
+  def validate_is_active(cls, value):
+    if not isinstance(value, bool):
+      raise PydanticCustomError(
+        'invalid_is_active_error',
+        'A flag is_active é inválida.',
+        {'is_active': value},
+      )
+
+    return value
+
   @field_validator('mac_address')
   def validate_mac_address(cls, value):
     value = str(value).upper()
@@ -134,6 +164,22 @@ class Device(BaseModel):
         'invalid_networkId_error',
         'O networkId do dispositivo é inválido.',
         {'networkId': value},
+      )
+
+  @field_validator('profileId')
+  def validate_profileId(cls, value):
+    if value is None:
+      return value
+    try:
+      is_valid_id = ObjectId.is_valid(value)
+      if not is_valid_id:
+        raise Exception
+      return value
+    except Exception as e:
+      raise PydanticCustomError(
+        'invalid_profileId_error',
+        'O profileId do dispositivo é inválido.',
+        {'profileId': value},
       )
 
   @field_validator('configId')
@@ -156,6 +202,7 @@ class DeviceCollection(BaseModel):
   devices: List[Device]
 
 class DeviceUpdate(BaseModel):
+  is_active: Optional[bool] = Field(default=None)
   mac_address: Optional[str] = None
   ip_address: Optional[str] = Field(default=None)
   user: Optional[str] = Field(default=None)
@@ -166,7 +213,18 @@ class DeviceUpdate(BaseModel):
   services_configs: Optional[Services] = None
   andromeda_configs: Optional[Andromeda] = None
   networkId: Optional[PyObjectId] | None = ''
+  profileId: Optional[PyObjectId] | None = ''
 
+  @field_validator('is_active')
+  def validate_is_active(cls, value):
+    if not isinstance(value, bool):
+      raise PydanticCustomError(
+        'invalid_is_active_error',
+        'A flag is_active é inválida.',
+        {'is_active': value},
+      )
+
+    return value
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):
@@ -209,4 +267,20 @@ class DeviceUpdate(BaseModel):
         'invalid_networkId_error',
         'O networkId do dispositivo é inválido.',
         {'networkId': value},
+      )
+
+  @field_validator('profileId')
+  def validate_profileId(cls, value):
+    if value is None:
+      return value
+    try:
+      is_valid_id = ObjectId.is_valid(value)
+      if not is_valid_id:
+        raise Exception
+      return value
+    except Exception as e:
+      raise PydanticCustomError(
+        'invalid_profileId_error',
+        'O profileId do dispositivo é inválido.',
+        {'profileId': value},
       )
