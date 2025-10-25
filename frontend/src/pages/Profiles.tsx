@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import {
   Backdrop,
   Breadcrumbs,
@@ -8,21 +9,24 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { DeviceAdoptionDialog, DeviceList } from '../shared/components';
-import { BreadcrumbLink } from '../shared/components/BreadcrumbLink';
+import {
+  BreadcrumbLink,
+  ProfileCreationDialog,
+  ProfileList,
+} from '../shared/components';
 import { useAppSelector } from '../shared/hooks';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
 
-export const DevicesPage = () => {
-  const [openAdoptionDialog, setOpenAdoptionDialog] = useState(false);
+export const ProfilesPage = () => {
+  const [openCreationDialog, setOpenCreationDialog] = useState(false);
   const userInfo = useAppSelector(selectUserInfo);
 
-  const handleOpenAdoptionDialog = () => {
-    setOpenAdoptionDialog(true);
+  const handleOpenCreationDialog = () => {
+    setOpenCreationDialog(true);
   };
 
-  const handleCloseAdoptionDialog = () => {
-    setOpenAdoptionDialog(false);
+  const handleCloseCreationDialog = () => {
+    setOpenCreationDialog(false);
   };
 
   return (
@@ -30,30 +34,29 @@ export const DevicesPage = () => {
       <Grid>
         <Breadcrumbs aria-label="breadcrumb">
           <BreadcrumbLink to="/dashboard">Home</BreadcrumbLink>
-          <Typography color="text.primary">Dispositivos</Typography>
+          <Typography color="text.primary">Profiles</Typography>
         </Breadcrumbs>
       </Grid>
       <Grid>
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>
-              <DeviceList organizationId={userInfo.organizationId} />
+              <ProfileList />
               <Button
                 variant="contained"
                 sx={{
                   width: { xs: '100%', sm: '40%', md: '35%', lg: '25%' },
                   mt: 2,
                 }}
-                onClick={handleOpenAdoptionDialog}
+                onClick={handleOpenCreationDialog}
               >
-                Adotar dispositivo
+                Criar profile
               </Button>
             </Paper>
-            <DeviceAdoptionDialog
-              open={openAdoptionDialog}
-              handleClose={handleCloseAdoptionDialog}
-              organizationId={userInfo.organizationId}
-            />{' '}
+            <ProfileCreationDialog
+              open={openCreationDialog}
+              handleClose={handleCloseCreationDialog}
+            />
           </>
         ) : (
           <Backdrop

@@ -16,6 +16,7 @@ export const PageGridCenteredContainer = ({
       height="100%"
       overflow="auto"
       p={2}
+      size={12}
     >
       {children}
     </Grid>

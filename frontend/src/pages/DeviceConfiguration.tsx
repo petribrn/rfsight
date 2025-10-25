@@ -16,7 +16,7 @@ export const DeviceConfigurationPage = () => {
   });
   return deviceData ? (
     <Grid container direction="column">
-      <Grid item xs={1}>
+      <Grid size={{xs: 1}}>
         <Typography variant="h5" mb={2}>
           Configurações do dispositivo {deviceData.name}
         </Typography>
@@ -26,7 +26,7 @@ export const DeviceConfigurationPage = () => {
           <Typography color="text.primary">{deviceData.name}</Typography>
         </Breadcrumbs>
       </Grid>
-      <Grid item xs={1}>
+      <Grid size={{xs: 1}}>
         <ConfigurationForm
           configId={deviceData.configId}
           deviceId={deviceId!}

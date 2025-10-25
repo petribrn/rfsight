@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   DashboardPage,
@@ -5,6 +6,7 @@ import {
   DevicesPage,
   ForgotPasswordPage,
   NetworksPage,
+  ProfilesPage,
   RegisterPage,
   ResetPasswordPage,
 } from '../pages';
@@ -52,8 +54,36 @@ export default function AppRoutes() {
             element={<PageWithSideMenu pageContent={<NetworksPage />} />}
           />
           <Route
+            path="/configure"
+            element={
+              <PageWithSideMenu pageContent={<Typography>Configure</Typography>} />
+            }
+          />
+          <Route
             path="/devices"
             element={<PageWithSideMenu pageContent={<DevicesPage />} />}
+          />
+          <Route
+            path="/profiles"
+            element={
+              <PageWithSideMenu
+                pageContent={<ProfilesPage />}
+              />
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PageWithSideMenu pageContent={<Typography>Users</Typography>} />
+            }
+          />
+          <Route
+            path="/organizations"
+            element={
+              <PageWithSideMenu
+                pageContent={<Typography>Organizations</Typography>}
+              />
+            }
           />
           <Route
             path="/devices/:deviceId/configure"

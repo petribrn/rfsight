@@ -34,8 +34,10 @@ export const ConfirmationDialog = ({
       open={open}
       onClose={handleClose}
       onSubmit={handleConfirm}
-      PaperProps={{
-        sx: { p: 2, width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' } },
+      slotProps={{
+        paper: {
+          sx: { p: 2, width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' } },
+        }
       }}
     >
       <DialogTitle>

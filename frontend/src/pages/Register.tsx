@@ -6,12 +6,12 @@ export const RegisterPage = () => {
   const theme = useTheme();
   return (
     <PageGridCenteredContainer>
-      <Grid item xs={8} md={6} lg={3}>
+      <Grid size={{xs:8, md:6, lg:3}}>
         <Grid container direction="column">
-          <Grid item>
+          <Grid>
             <RegisterForm />
           </Grid>
-          <Grid item>
+          <Grid>
             <Typography align="right">
               Já possui uma conta?{' '}
               <Link

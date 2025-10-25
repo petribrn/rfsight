@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from src.configs.constants import API_PORT
 from src.routers import (auth, configurations, devices, monitor, networks,
-                         organizations, users)
+                         organizations, profiles, users)
 
 load_dotenv()
 
@@ -19,6 +19,7 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(devices.router)
+app.include_router(profiles.router)
 app.include_router(organizations.router)
 app.include_router(networks.router)
 app.include_router(configurations.router)

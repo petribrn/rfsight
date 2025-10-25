@@ -53,5 +53,5 @@ export const apiSlice = createApi({
   baseQuery: baseQueryWithReAuth,
   keepUnusedDataFor: 15,
   endpoints: (_builder) => ({}),
-  tagTypes: ['User', 'Organization', 'Network', 'Device'],
+  tagTypes: ['User', 'Organization', 'Network', 'Device', 'Profile'],
 });

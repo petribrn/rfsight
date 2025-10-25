@@ -7,7 +7,7 @@ import {
 export const ForgotPasswordPage = () => {
   return (
     <PageGridCenteredContainer>
-      <Grid item xs={8} md={6} lg={3}>
+      <Grid size={{xs:8, md:6, lg:3}}>
         <ForgotPasswordForm />
       </Grid>
     </PageGridCenteredContainer>

@@ -172,9 +172,11 @@ export const DeviceAdoptionDialog = ({
         handleClose();
       }}
       onSubmit={handleSubmit}
-      PaperProps={{
-        component: 'form',
+      slotProps={{
+        paper: {
+          component: 'form',
         sx: { p: 2, width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' } },
+        }
       }}
     >
       <DialogTitle>
@@ -210,9 +212,11 @@ export const DeviceAdoptionDialog = ({
                 setMacAddressErr
               )
             }
-            InputProps={{
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              inputComponent: MacAddressTextMask as any,
+            slotProps={{
+              input: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                inputComponent: MacAddressTextMask as any,
+              }
             }}
             value={macAddress}
             error={macAddressErr !== ''}
@@ -255,10 +259,12 @@ export const DeviceAdoptionDialog = ({
                   setIpAddressErr
                 )
               }
-              InputProps={{
+              slotProps={{
+              input: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 inputComponent: IPAddressTextMask as any,
-              }}
+              }
+            }}
               value={ipAddress}
               error={ipAddressErr !== ''}
             />

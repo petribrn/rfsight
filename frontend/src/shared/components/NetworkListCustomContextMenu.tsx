@@ -53,7 +53,7 @@ export const NetworkListCustomContextMenu = ({
   const handleVisualize = () => {
     handleCloseMenu();
   };
-  const handleConfigure = () => {
+  const handleEdit = () => {
     handleCloseMenu();
   };
   const handleRemove = async () => {
@@ -85,8 +85,8 @@ export const NetworkListCustomContextMenu = ({
           onClose={handleCloseMenu}
           anchorEl={target}
           anchorPosition={{ top: mouseY, left: mouseX + 5 }}
-          MenuListProps={{
-            'aria-labelledby': `action-button-${rowData.id}`,
+          slotProps={{
+            list: {'aria-labelledby': `action-button-${rowData.id}`,}
           }}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -96,11 +96,11 @@ export const NetworkListCustomContextMenu = ({
             </ListItemIcon>
             Visualizar
           </MenuItem>
-          <MenuItem onClick={handleConfigure}>
+          <MenuItem onClick={handleEdit}>
             <ListItemIcon>
               <SettingsIcon fontSize="small" />
             </ListItemIcon>
-            Configurar
+            Editar
           </MenuItem>
           <MenuItem
             onClick={() => {

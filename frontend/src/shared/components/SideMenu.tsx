@@ -9,12 +9,16 @@ import {
   useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../hooks';
+import { selectUserInfo } from '../store/slices/user/userSlice';
 import { menuItems } from '../ts/states';
 
 export const SideMenu = () => {
   const theme = useTheme();
 
   const navigate = useNavigate();
+
+  const userInfo = useAppSelector(selectUserInfo);
 
   const isActive = (itemPathTo: string) => {
     return window.location.pathname.includes(itemPathTo);
@@ -53,7 +57,7 @@ export const SideMenu = () => {
               backgroundColor: getBackGroundColor(item.path),
             }}
           >
-            <ListItemButton onClick={() => navigate(item.path)}>
+            <ListItemButton onClick={() => navigate(item.path)} disabled={item.disabled(userInfo)}>
               <ListItemIcon
                 sx={{
                   minWidth: 0,
@@ -65,10 +69,12 @@ export const SideMenu = () => {
               </ListItemIcon>
               <ListItemText
                 primary={item.name}
-                primaryTypographyProps={{
-                  fontSize: { xs: 10, sm: 12, md: 14, lg: 16 },
-                  fontWeight: isActive(item.path) ? 800 : 50,
-                  color: getContrastText(item.path),
+                slotProps={{
+                  primary: {
+                    fontSize: { xs: 10, sm: 12, md: 14, lg: 16 },
+                    fontWeight: isActive(item.path) ? 800 : 50,
+                    color: getContrastText(item.path),
+                  }
                 }}
               />
             </ListItemButton>

@@ -4,5 +4,7 @@ export * from './DeviceConfiguration';
 export * from './Devices';
 export * from './ForgotPassword';
 export * from './Networks';
+export * from './Profiles';
 export * from './Register';
 export * from './ResetPassword';
+

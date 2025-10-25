@@ -10,15 +10,15 @@ import MenuItem from '@mui/material/MenuItem';
 import { GridCellParams } from '@mui/x-data-grid';
 import { MouseEvent, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useRemoveNetworkMutation } from '../store/slices/network/networkApiSlice';
+import { useRemoveProfileMutation } from '../store/slices/profile/profileApiSlice';
 import { DefaultApiError } from '../ts/interfaces';
 import { ConfirmationDialog } from './ConfirmationDialog';
 
-export const NetworksActionsMenu = (params: GridCellParams) => {
+export const ProfileActionsMenu = (params: GridCellParams) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [removeNetwork] = useRemoveNetworkMutation();
+  const [removeProfile] = useRemoveProfileMutation();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -43,8 +43,8 @@ export const NetworksActionsMenu = (params: GridCellParams) => {
   const handleRemove = async () => {
     handleCloseConfirmation();
     try {
-      const removeNetworkResult = await removeNetwork(id).unwrap();
-      if (removeNetworkResult) toast.success(removeNetworkResult.message);
+      const removeProfileResult = await removeProfile(id).unwrap();
+      if (removeProfileResult) toast.success(removeProfileResult.message);
       handleCloseMenu();
       return true;
     } catch (error) {
@@ -105,8 +105,8 @@ export const NetworksActionsMenu = (params: GridCellParams) => {
         open={confirmationDialogOpen}
         handleClose={handleCloseConfirmation}
         handleConfirm={handleRemove}
-        title="Deseja mesmo remover a rede?"
-        content="Ao remover a rede, a gerência de todos os dispositivos adotados nessa rede será perdida."
+        title="Deseja mesmo remover o profile?"
+        content="Ao remover o profile, todos os dispositivos associados serão desativados."
         confirmButtonText="Remover"
         closeButtonText="Cancelar"
       />
