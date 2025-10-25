@@ -5,12 +5,7 @@ import {
   Backdrop,
   Button,
   CircularProgress,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
   Tooltip,
   useTheme,
 } from '@mui/material';
@@ -24,37 +19,30 @@ import Typography from '@mui/material/Typography';
 import Joi from 'joi';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useCreateNewNetworkMutation } from '../store/slices/network/networkApiSlice';
+import { useCreateNewProfileMutation } from '../store/slices/profile/profileApiSlice';
+import { DefaultApiError } from '../ts/interfaces';
 import {
-  DefaultApiError,
-  INetworkCreationDialogProps,
-  INewNetworkPayload,
-} from '../ts/interfaces';
-import {
-  NetworkLocationSchema,
-  NetworkNameSchema,
-  NetworkSchema,
-} from '../ts/validation';
+  INewProfilePayload,
+  IProfileCreationDialogProps,
+} from '../ts/interfaces/profile.interfaces';
+import { ProfileActions } from '../ts/types';
+import { NetworkSchema, ProfileNameSchema } from '../ts/validation';
+import { ProfileActionsList } from './ProfileActionsList';
 
-const networkTypeOptions = ['Bridge'];
-
-export const NetworkCreationDialog = ({
+export const ProfileCreationDialog = ({
   open,
   handleClose,
-  organizationId,
-}: INetworkCreationDialogProps) => {
+}: IProfileCreationDialogProps) => {
   // Hooks
   const theme = useTheme();
-  const [createNewNetwork, { isLoading }] = useCreateNewNetworkMutation();
+  const [createNewProfile, { isLoading }] = useCreateNewProfileMutation();
 
   // States
   const [name, setName] = useState('');
-  const [networkType, setNetworkType] = useState(networkTypeOptions[0]);
-  const [location, setLocation] = useState('');
+  const [actions, setActions] = useState<ProfileActions>({});
 
   // Error states
   const [nameErr, setNameErr] = useState('');
-  const [locationErr, setLocationErr] = useState('');
   const [submitErrMsg, setSubmitErrMsg] = useState('');
 
   // Handlers
@@ -77,19 +65,13 @@ export const NetworkCreationDialog = ({
     return value;
   };
 
-  const handleSelect = (event: SelectChangeEvent) => {
-    setNetworkType(event.target.value as string);
-  };
-
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement | HTMLDivElement>
   ) => {
     e.preventDefault();
-    const newNetworkPayload: INewNetworkPayload = {
+    const newNetworkPayload: INewProfilePayload = {
       name,
-      network_type: networkType,
-      location,
-      organizationId,
+      actions,
     };
 
     const { error: validationError, value } = NetworkSchema.validate({
@@ -101,11 +83,10 @@ export const NetworkCreationDialog = ({
     }
 
     try {
-      const createdNewNetwork =
-        await createNewNetwork(newNetworkPayload).unwrap();
-      if (createdNewNetwork) toast.success(createdNewNetwork.message);
+      const createdNewProfile =
+        await createNewProfile(newNetworkPayload).unwrap();
+      if (createdNewProfile) toast.success(createdNewProfile.message);
       setName('');
-      setLocation('');
       handleClose();
       return value;
     } catch (error) {
@@ -120,20 +101,31 @@ export const NetworkCreationDialog = ({
       open={open}
       onClose={() => {
         setName('');
-        setLocation('');
+        setNameErr('');
         handleClose();
       }}
       onSubmit={handleSubmit}
-      slotProps={{paper: {
-        component: 'form',
-        sx: { p: 2, width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' } },
-      }}}
+      slotProps={{
+        paper: {
+          component: 'form',
+          sx: {
+            p: 2,
+            width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' },
+          },
+        },
+      }}
     >
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="body1">Criar Rede</Typography>
+          <Typography variant="body1">Criar Profile</Typography>
           <Tooltip title="Fechar">
-            <IconButton onClick={handleClose}>
+            <IconButton
+              onClick={() => {
+                setName('');
+                setNameErr('');
+                handleClose();
+              }}
+            >
               <CloseIcon fontSize="medium" />
             </IconButton>
           </Tooltip>
@@ -141,12 +133,12 @@ export const NetworkCreationDialog = ({
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Preencha os dados da nova rede e clique em "Salvar".
+          Preencha os dados do novo profile e clique em "Salvar".
         </DialogContentText>
         <Box display="flex" flexDirection="column" mt={2}>
           <TextField
             id="name"
-            label="Nome da rede"
+            label="Nome do profile"
             variant="outlined"
             fullWidth
             autoFocus
@@ -155,7 +147,7 @@ export const NetworkCreationDialog = ({
             onChange={(e) =>
               handleFieldChange(
                 e.target.value,
-                NetworkNameSchema,
+                ProfileNameSchema,
                 setName,
                 setNameErr
               )
@@ -176,64 +168,15 @@ export const NetworkCreationDialog = ({
           </Typography>
         </Box>
         <Box display="flex" flexDirection="column" mt={2}>
-          <TextField
-            id="location"
-            label="Localização da rede"
-            variant="outlined"
-            fullWidth
-            autoFocus
-            autoComplete="new-password"
-            type="text"
-            onChange={(e) =>
-              handleFieldChange(
-                e.target.value,
-                NetworkLocationSchema,
-                setLocation,
-                setLocationErr
-              )
-            }
-            value={location}
-            error={locationErr !== ''}
-            required
-          />
-          <Typography
-            variant="caption"
-            color={theme.palette.error.main}
-            m={0}
-            fontSize="small"
-            width="100%"
-            align="left"
-          >
-            {locationErr}
-          </Typography>
+          <ProfileActionsList actions={actions} />
         </Box>
-        <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
-          <InputLabel id="network-type-select-label" required>
-            Tipo
-          </InputLabel>
-          <Select
-            labelId="network-type-select-label"
-            id="network-type-select"
-            value={networkType}
-            label="Tipo"
-            required
-            error={!networkType}
-            onChange={handleSelect}
-          >
-            {networkTypeOptions.map((option) => (
-              <MenuItem key={`${option}-select-item`} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <Button
           variant="contained"
           size="large"
           fullWidth
           type="submit"
           sx={{ marginTop: '1rem' }}
-          disabled={!organizationId}
+          disabled={!name || !(Object.keys(actions).length > 0)}
         >
           Salvar
         </Button>

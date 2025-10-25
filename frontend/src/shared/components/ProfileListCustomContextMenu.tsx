@@ -8,15 +8,16 @@ import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useRemoveNetworkMutation } from '../store/slices/network/networkApiSlice';
-import { DefaultApiError, INetworkContextMenu } from '../ts/interfaces';
-import { NetworkRow } from '../ts/types';
+import { useRemoveProfileMutation } from '../store/slices/profile/profileApiSlice';
+import { DefaultApiError } from '../ts/interfaces';
+import { IProfileContextMenu } from '../ts/interfaces/profile.interfaces';
+import { ProfileRow } from '../ts/types';
 import { ConfirmationDialog } from './ConfirmationDialog';
 
 interface Props {
   mouseX: number;
   mouseY: number;
-  rowData: NetworkRow;
+  rowData: ProfileRow;
   target: HTMLElement;
   removeConfirmationDialogProps: {
     title: string;
@@ -24,10 +25,10 @@ interface Props {
     closeButtonText: string;
     confirmButtonText: string;
   };
-  setContextMenu: Dispatch<SetStateAction<INetworkContextMenu | null>>;
+  setContextMenu: Dispatch<SetStateAction<IProfileContextMenu | null>>;
 }
 
-export const NetworkListCustomContextMenu = ({
+export const ProfileListCustomContextMenu = ({
   mouseX,
   mouseY,
   rowData,
@@ -36,7 +37,7 @@ export const NetworkListCustomContextMenu = ({
   removeConfirmationDialogProps,
 }: Props) => {
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [removeNetwork] = useRemoveNetworkMutation();
+  const [removeProfile] = useRemoveProfileMutation();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(target);
   const menuOpen = Boolean(anchorEl);
@@ -59,8 +60,8 @@ export const NetworkListCustomContextMenu = ({
   const handleRemove = async () => {
     handleCloseConfirmation();
     try {
-      const removeNetworkResult = await removeNetwork(rowData.id).unwrap();
-      if (removeNetworkResult) toast.success(removeNetworkResult.message);
+      const removeProfileResult = await removeProfile(rowData.id).unwrap();
+      if (removeProfileResult) toast.success(removeProfileResult.message);
       handleCloseMenu();
       return true;
     } catch (error) {

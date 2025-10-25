@@ -10,6 +10,7 @@ export enum ApiRoutes {
   Users = '/users',
   Networks = '/networks',
   Devices = '/devices',
+  Profiles = '/profiles',
   Configurations = '/configurations',
 }
 

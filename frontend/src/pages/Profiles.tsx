@@ -11,13 +11,13 @@ import {
 import { useState } from 'react';
 import {
   BreadcrumbLink,
-  NetworkCreationDialog,
-  NetworkList,
+  ProfileCreationDialog,
+  ProfileList,
 } from '../shared/components';
 import { useAppSelector } from '../shared/hooks';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
 
-export const TemplatesPage = () => {
+export const ProfilesPage = () => {
   const [openCreationDialog, setOpenCreationDialog] = useState(false);
   const userInfo = useAppSelector(selectUserInfo);
 
@@ -34,14 +34,14 @@ export const TemplatesPage = () => {
       <Grid>
         <Breadcrumbs aria-label="breadcrumb">
           <BreadcrumbLink to="/dashboard">Home</BreadcrumbLink>
-          <Typography color="text.primary">Templates</Typography>
+          <Typography color="text.primary">Profiles</Typography>
         </Breadcrumbs>
       </Grid>
       <Grid>
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>
-              <NetworkList organizationId={userInfo.organizationId} />
+              <ProfileList />
               <Button
                 variant="contained"
                 sx={{
@@ -50,13 +50,12 @@ export const TemplatesPage = () => {
                 }}
                 onClick={handleOpenCreationDialog}
               >
-                Criar template
+                Criar profile
               </Button>
             </Paper>
-            <NetworkCreationDialog
+            <ProfileCreationDialog
               open={openCreationDialog}
               handleClose={handleCloseCreationDialog}
-              organizationId={userInfo.organizationId}
             />
           </>
         ) : (

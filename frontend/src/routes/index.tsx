@@ -6,6 +6,7 @@ import {
   DevicesPage,
   ForgotPasswordPage,
   NetworksPage,
+  ProfilesPage,
   RegisterPage,
   ResetPasswordPage,
 } from '../pages';
@@ -53,14 +54,20 @@ export default function AppRoutes() {
             element={<PageWithSideMenu pageContent={<NetworksPage />} />}
           />
           <Route
+            path="/configure"
+            element={
+              <PageWithSideMenu pageContent={<Typography>Configure</Typography>} />
+            }
+          />
+          <Route
             path="/devices"
             element={<PageWithSideMenu pageContent={<DevicesPage />} />}
           />
           <Route
-            path="/templates"
+            path="/profiles"
             element={
               <PageWithSideMenu
-                pageContent={<Typography>Templates</Typography>}
+                pageContent={<ProfilesPage />}
               />
             }
           />
