@@ -1,3 +1,4 @@
+export * from './ActionDialog';
 export * from './AuthForm';
 export * from './BreadcrumbLink';
 export * from './Configuration/ConfigurationTabs';
@@ -36,7 +37,7 @@ export * from './PersistLogin';
 export * from './PrivateRoutes';
 export * from './ProfileActionsList';
 export * from './ProfileActionsMenu';
-export * from './ProfileCreationDialog';
+export * from './ProfileDialog';
 export * from './ProfileList';
 export * from './ProfileListCustomContextMenu';
 export * from './RegisterForm';
@@ -47,4 +48,3 @@ export * from './styled/FormPaper';
 export * from './styled/PageGridContainer';
 export * from './styled/TabPanelPaper';
 export * from './TabPanel';
-

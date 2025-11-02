@@ -1,3 +1,4 @@
+import { GridColDef } from '@mui/x-data-grid';
 import { DeviceRow } from '../types';
 
 export interface IGetDeviceCollectionPayload {
@@ -17,11 +18,13 @@ export interface IAdoptDevicePayload {
   user: string;
   password: string;
   networkId: string;
+  profileId: string;
 }
 
 export interface IDeviceListProps {
   organizationId: string;
   networkId?: string | null;
+  columns: GridColDef<DeviceRow>[];
 }
 
 export interface IDeviceContextMenu {

@@ -5,6 +5,7 @@ export * from './device.interfaces';
 export * from './network.interfaces';
 export * from './organization.interfaces';
 export * from './privateRoutes.interfaces';
+export * from './profile.interfaces';
 export * from './tabs.interfaces';
 export * from './theme.interfaces';
 export * from './user.interfaces';

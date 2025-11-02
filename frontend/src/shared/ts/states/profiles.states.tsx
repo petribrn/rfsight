@@ -1,36 +1,21 @@
-import { GridColDef } from '@mui/x-data-grid';
-import { ProfileActionsMenu } from '../../components';
-import { ProfileRow } from '../types';
+import { HttpDetails, ProfileAction, SshDetails } from '../types';
 
-export const ProfileListColumns: GridColDef<ProfileRow>[] = [
-  { field: 'id', headerName: 'ID' },
-  {
-    field: 'name',
-    headerName: 'Nome',
-    flex: 1
-  },
-  {
-    field: 'numberOfActions',
-    headerName: 'Qtd. de ações',
-    type: 'number',
-    flex: 0.4
-  },
-  {
-    field: 'createdAt',
-    headerName: 'Data de criação',
-    valueFormatter: (value: Date) => value.toLocaleString('pt-BR'),
-    flex: 0.4
-  },
-  {
-    field: 'updatedAt',
-    headerName: 'Data de atualização',
-    valueFormatter: (value: Date) => value.toLocaleString('pt-BR'),
-    flex: 0.4
-  },
-  {
-    field: 'actions',
-    headerName: 'Ações',
-    sortable: false,
-    renderCell: ProfileActionsMenu,
-  },
-];
+export const defaultHttpDetails: HttpDetails = {
+  method: 'GET',
+  successStatusCode: 200,
+  path: '',
+  responseType: 'text/json',
+  responseMapping: {},
+};
+
+export const defaultSshDetails: SshDetails = {
+  port: 22,
+  command: '',
+};
+
+export const defaultAction: ProfileAction = {
+  actionType: 'monitor',
+  protocol: 'http',
+  httpDetails: defaultHttpDetails,
+  sshDetails: null,
+};

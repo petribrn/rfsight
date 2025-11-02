@@ -17,33 +17,56 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Joi from 'joi';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useCreateNewProfileMutation } from '../store/slices/profile/profileApiSlice';
-import { DefaultApiError } from '../ts/interfaces';
 import {
+  useCreateNewProfileMutation,
+  useEditProfileByIdMutation,
+} from '../store/slices/profile/profileApiSlice';
+import {
+  DefaultApiError,
   INewProfilePayload,
-  IProfileCreationDialogProps,
-} from '../ts/interfaces/profile.interfaces';
+  IProfileDialogProps,
+  IProfileUpdatePayload,
+} from '../ts/interfaces';
 import { ProfileActions } from '../ts/types';
-import { NetworkSchema, ProfileNameSchema } from '../ts/validation';
+import {
+  ProfileNameSchema,
+  ProfileSchema,
+  ProfileUpdateSchema,
+} from '../ts/validation';
 import { ProfileActionsList } from './ProfileActionsList';
 
-export const ProfileCreationDialog = ({
+export const ProfileDialog = ({
   open,
   handleClose,
-}: IProfileCreationDialogProps) => {
+  operation,
+  originalProfileData,
+}: IProfileDialogProps) => {
   // Hooks
   const theme = useTheme();
   const [createNewProfile, { isLoading }] = useCreateNewProfileMutation();
+  const [editProfile, { isLoading: isLoadingUpdate }] =
+    useEditProfileByIdMutation();
 
   // States
-  const [name, setName] = useState('');
-  const [actions, setActions] = useState<ProfileActions>({});
+  const [name, setName] = useState(
+    originalProfileData ? originalProfileData.name : ''
+  );
+  const [actions, setActions] = useState<ProfileActions>(
+    originalProfileData ? originalProfileData.actions : {}
+  );
 
   // Error states
   const [nameErr, setNameErr] = useState('');
   const [submitErrMsg, setSubmitErrMsg] = useState('');
+
+  useEffect(() => {
+    if (originalProfileData) {
+      setName(originalProfileData.name);
+      setActions(originalProfileData.actions);
+    }
+  }, [originalProfileData, open]);
 
   // Handlers
   const handleFieldChange = (
@@ -69,30 +92,67 @@ export const ProfileCreationDialog = ({
     e: React.FormEvent<HTMLFormElement | HTMLDivElement>
   ) => {
     e.preventDefault();
-    const newNetworkPayload: INewProfilePayload = {
-      name,
-      actions,
-    };
 
-    const { error: validationError, value } = NetworkSchema.validate({
-      ...newNetworkPayload,
-    });
+    if (operation === 'create') {
+      const profilePayload: INewProfilePayload = {
+        name,
+        actions,
+      };
 
-    if (validationError) {
-      setSubmitErrMsg(validationError.message);
-    }
+      const { error: validationError, value } = ProfileSchema.validate({
+        ...profilePayload,
+      });
 
-    try {
-      const createdNewProfile =
-        await createNewProfile(newNetworkPayload).unwrap();
-      if (createdNewProfile) toast.success(createdNewProfile.message);
-      setName('');
-      handleClose();
-      return value;
-    } catch (error) {
-      const err = error as DefaultApiError;
-      setSubmitErrMsg(err.detail.message);
-      return false;
+      if (validationError) {
+        setSubmitErrMsg(validationError.message);
+        return false;
+      }
+
+      try {
+        const createdNewProfile =
+          await createNewProfile(profilePayload).unwrap();
+        if (createdNewProfile) toast.success(createdNewProfile.message);
+        setName('');
+        setNameErr('');
+        setActions({});
+        handleClose();
+        return value;
+      } catch (error) {
+        const err = error as DefaultApiError;
+        setSubmitErrMsg(err.detail.message);
+        return false;
+      }
+    } else if (operation === 'edit') {
+      const profilePayload: IProfileUpdatePayload = {
+        id: originalProfileData!.id,
+        newProfileData: {
+          name,
+          actions,
+        },
+      };
+
+      const { error: validationError, value } = ProfileUpdateSchema.validate({
+        ...profilePayload.newProfileData,
+      });
+
+      if (validationError) {
+        setSubmitErrMsg(validationError.message);
+        return false;
+      }
+
+      try {
+        const editedProfile = await editProfile(profilePayload).unwrap();
+        if (editedProfile) toast.success(editedProfile.message);
+        setName('');
+        setNameErr('');
+        setActions({});
+        handleClose();
+        return value;
+      } catch (error) {
+        const err = error as DefaultApiError;
+        setSubmitErrMsg(err.detail.message);
+        return false;
+      }
     }
   };
 
@@ -101,6 +161,7 @@ export const ProfileCreationDialog = ({
       open={open}
       onClose={() => {
         setName('');
+        setActions({});
         setNameErr('');
         handleClose();
       }}
@@ -117,11 +178,14 @@ export const ProfileCreationDialog = ({
     >
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="body1">Criar Profile</Typography>
+          <Typography variant="body1">
+            {operation === 'create' ? 'Criar' : 'Editar'} Profile
+          </Typography>
           <Tooltip title="Fechar">
             <IconButton
               onClick={() => {
                 setName('');
+                setActions({});
                 setNameErr('');
                 handleClose();
               }}
@@ -133,7 +197,10 @@ export const ProfileCreationDialog = ({
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Preencha os dados do novo profile e clique em "Salvar".
+          {operation === 'create'
+            ? 'Preencha os dados do novo profile'
+            : 'Altere os dados do profile'}{' '}
+          e clique em "Salvar".
         </DialogContentText>
         <Box display="flex" flexDirection="column" mt={2}>
           <TextField
@@ -168,7 +235,7 @@ export const ProfileCreationDialog = ({
           </Typography>
         </Box>
         <Box display="flex" flexDirection="column" mt={2}>
-          <ProfileActionsList actions={actions} />
+          <ProfileActionsList actions={actions} setActions={setActions} />
         </Box>
         <Button
           variant="contained"
@@ -190,7 +257,7 @@ export const ProfileCreationDialog = ({
       </DialogContent>
       <Backdrop
         sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }}
-        open={isLoading}
+        open={isLoading || isLoadingUpdate}
       >
         <CircularProgress color="inherit" />
       </Backdrop>

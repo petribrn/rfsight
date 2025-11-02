@@ -53,10 +53,20 @@ export const DeviceNetworkIdSchema = Joi.string()
     'any.required': '{{#label}} é obrigatório.',
   });
 
+export const DeviceProfileIdSchema = Joi.string()
+  .required()
+  .label('Rede')
+  .messages({
+    'string.empty': '{{#label}} não deve estar vazio.',
+    'string.base': '{{#label}} deve ser um texto.',
+    'any.required': '{{#label}} é obrigatório.',
+  });
+
 export const DeviceAdoptSchema = Joi.object({
   mac_address: DeviceMACAddressSchema,
   ip_address: DeviceIpAddressSchema,
   user: DeviceUserSchema,
   password: DevicePasswdSchema,
   networkId: DeviceNetworkIdSchema,
+  profileId: DeviceProfileIdSchema,
 });

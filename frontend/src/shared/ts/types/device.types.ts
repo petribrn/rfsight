@@ -15,6 +15,7 @@ export type DeviceData = {
   fw_version: string;
   location: string;
   networkId: string;
+  profileId: string;
   configId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +30,7 @@ export type DeviceRow = {
   fw_version: string;
   location: string;
   network: string;
+  profile: string;
   online: boolean;
   adoptionDate: Date;
   updatedAt: Date;

@@ -1,12 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import SettingsIcon from '@mui/icons-material/Settings';
+import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Box from '@mui/material/Box';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useRemoveProfileMutation } from '../store/slices/profile/profileApiSlice';
 import { DefaultApiError } from '../ts/interfaces';
@@ -31,7 +31,7 @@ interface Props {
 export const ProfileListCustomContextMenu = ({
   mouseX,
   mouseY,
-  rowData,
+  rowData, // Profile data
   target,
   setContextMenu,
   removeConfirmationDialogProps,
@@ -41,6 +41,19 @@ export const ProfileListCustomContextMenu = ({
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(target);
   const menuOpen = Boolean(anchorEl);
+
+  useEffect(() => {
+    const handleContextMenu = (e: PointerEvent) => {
+      // prevent the right-click menu from appearing
+      e.preventDefault();
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -87,7 +100,7 @@ export const ProfileListCustomContextMenu = ({
           anchorEl={target}
           anchorPosition={{ top: mouseY, left: mouseX + 5 }}
           slotProps={{
-            list: {'aria-labelledby': `action-button-${rowData.id}`,}
+            list: { 'aria-labelledby': `action-button-${rowData.id}` },
           }}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -99,7 +112,7 @@ export const ProfileListCustomContextMenu = ({
           </MenuItem>
           <MenuItem onClick={handleEdit}>
             <ListItemIcon>
-              <SettingsIcon fontSize="small" />
+              <EditIcon fontSize="small" />
             </ListItemIcon>
             Editar
           </MenuItem>

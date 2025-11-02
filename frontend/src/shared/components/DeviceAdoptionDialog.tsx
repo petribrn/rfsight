@@ -29,6 +29,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAdoptDeviceMutation } from '../store/slices/device/deviceApiSlice';
 import { useGetNetworksCollectionByOrgQuery } from '../store/slices/network/networkApiSlice';
+import { useGetProfilesCollectionQuery } from '../store/slices/profile/profileApiSlice';
 import {
   DefaultApiError,
   IAdoptDevicePayload,
@@ -56,6 +57,8 @@ export const DeviceAdoptionDialog = ({
     useGetNetworksCollectionByOrgQuery(organizationId, {
       skip: !organizationId,
     });
+  const { data: profiles, isLoading: isLoadingProfiles } =
+    useGetProfilesCollectionQuery();
 
   // States
   const [macAddress, setMacAddress] = useState('');
@@ -64,6 +67,7 @@ export const DeviceAdoptionDialog = ({
   const [password, setPassword] = useState('');
   const [useIpAddress, setUseIpAddress] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState('');
+  const [selectedProfile, setSelectedProfile] = useState('');
 
   // Error states
   const [macAddressErr, setMacAddressErr] = useState('');
@@ -78,7 +82,12 @@ export const DeviceAdoptionDialog = ({
         setSelectedNetwork(networks.networks[0].id);
       }
     }
-  }, [isLoadingOrgNetworks, networks]);
+    if (!isLoadingProfiles) {
+      if (profiles) {
+        setSelectedProfile(profiles.profiles[0].id);
+      }
+    }
+  }, [isLoadingOrgNetworks, isLoadingProfiles, networks, profiles]);
 
   // Handlers
   const handleFieldChange = (
@@ -100,8 +109,12 @@ export const DeviceAdoptionDialog = ({
     return value;
   };
 
-  const handleSelect = (event: SelectChangeEvent) => {
+  const handleSelectNetwork = (event: SelectChangeEvent) => {
     setSelectedNetwork(event.target.value as string);
+  };
+
+  const handleSelectProfile = (event: SelectChangeEvent) => {
+    setSelectedProfile(event.target.value as string);
   };
 
   const handleUseIpAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,6 +134,7 @@ export const DeviceAdoptionDialog = ({
       user,
       password,
       networkId: selectedNetwork,
+      profileId: selectedProfile,
     };
 
     const { error: validationError, value } = DeviceAdoptSchema.validate({
@@ -175,8 +189,11 @@ export const DeviceAdoptionDialog = ({
       slotProps={{
         paper: {
           component: 'form',
-        sx: { p: 2, width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' } },
-        }
+          sx: {
+            p: 2,
+            width: { xs: '80vw', sm: '80vw', md: '70vw', lg: '60vw' },
+          },
+        },
       }}
     >
       <DialogTitle>
@@ -216,7 +233,7 @@ export const DeviceAdoptionDialog = ({
               input: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 inputComponent: MacAddressTextMask as any,
-              }
+              },
             }}
             value={macAddress}
             error={macAddressErr !== ''}
@@ -260,11 +277,11 @@ export const DeviceAdoptionDialog = ({
                 )
               }
               slotProps={{
-              input: {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                inputComponent: IPAddressTextMask as any,
-              }
-            }}
+                input: {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  inputComponent: IPAddressTextMask as any,
+                },
+              }}
               value={ipAddress}
               error={ipAddressErr !== ''}
             />
@@ -342,30 +359,56 @@ export const DeviceAdoptionDialog = ({
             {passwordErr}
           </Typography>
         </Box>
-        {!isLoadingOrgNetworks && networks ? (
-          <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
-            <InputLabel id="network-type-select-label" required>
-              Rede
-            </InputLabel>
-            <Select
-              labelId="network-type-select-label"
-              id="network-type-select"
-              value={selectedNetwork}
-              label="Tipo"
-              required
-              error={!selectedNetwork}
-              onChange={handleSelect}
-            >
-              {networks.networks.map((option) => (
-                <MenuItem key={`${option.id}-select-item`} value={option.id}>
-                  {option.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ) : (
-          <Skeleton />
-        )}
+        <Box display={'flex'} gap={1} flexDirection={'row'}>
+          {!isLoadingOrgNetworks && networks ? (
+            <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
+              <InputLabel id="network-type-select-label" required>
+                Rede
+              </InputLabel>
+              <Select
+                labelId="network-type-select-label"
+                id="network-type-select"
+                value={selectedNetwork}
+                label="Tipo"
+                required
+                error={!selectedNetwork}
+                onChange={handleSelectNetwork}
+              >
+                {networks.networks.map((option) => (
+                  <MenuItem key={`${option.id}-select-item`} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <Skeleton />
+          )}
+          {!isLoadingProfiles && profiles ? (
+            <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
+              <InputLabel id="profile-select-label" required>
+                Profile
+              </InputLabel>
+              <Select
+                labelId="profile-select-label"
+                id="profile-select"
+                value={selectedProfile}
+                label="Tipo"
+                required
+                error={!selectedProfile}
+                onChange={handleSelectProfile}
+              >
+                {profiles.profiles.map((option) => (
+                  <MenuItem key={`${option.id}-select-item`} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <Skeleton />
+          )}
+        </Box>
         <Button
           variant="contained"
           size="large"
