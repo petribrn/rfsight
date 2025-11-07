@@ -17,3 +17,7 @@ body{
 .breadcrumbLink:hover {
   text-decoration: underline;
 }
+
+.jer-editor-container {
+  max-width: none !important;
+}

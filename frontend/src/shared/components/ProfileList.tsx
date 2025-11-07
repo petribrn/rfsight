@@ -21,6 +21,7 @@ export const ProfileList = ({ columns }: IProfileList) => {
         profileCollection.profiles.map((profile) => ({
           id: profile.id,
           name: profile.name,
+          apiBaseUrl: profile.apiBaseUrl,
           actions: profile.actions,
           createdAt: new Date(profile.createdAt),
           updatedAt: new Date(profile.updatedAt),

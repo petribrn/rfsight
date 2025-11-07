@@ -2,6 +2,7 @@ export * from './auth.interfaces';
 export * from './backend.interfaces';
 export * from './dashboard.interfaces';
 export * from './device.interfaces';
+export * from './jsonEditor.interfaces';
 export * from './network.interfaces';
 export * from './organization.interfaces';
 export * from './privateRoutes.interfaces';

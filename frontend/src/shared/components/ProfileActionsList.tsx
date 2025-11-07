@@ -64,9 +64,27 @@ export const ProfileActionsList = ({
     actionData: ProfileAction
   ) => {
     setActions((prevActions) => {
-      console.log(prevActions);
       const newActions = { ...prevActions };
       const trimmedNewName = newName.trim();
+
+      // Make sure only one action for auth exists
+      if (actionData.actionType === 'auth') {
+        if (
+          Object.keys(newActions)
+            .map((key) => {
+              return newActions[key].actionType === 'auth' &&
+                key !== trimmedNewName
+                ? key
+                : null;
+            })
+            .filter(Boolean).length > 0
+        ) {
+          toast.error(
+            'Já existe uma ação de autenticação para esse profile. (Limite: 1)'
+          );
+          return prevActions;
+        }
+      }
 
       // Check for name conflicts before proceeding
       if (originalName !== trimmedNewName && newActions[trimmedNewName]) {

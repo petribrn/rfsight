@@ -43,6 +43,11 @@ export const ProfilesPage = () => {
       flex: 1,
     },
     {
+      field: 'apiBaseUrl',
+      headerName: 'URL base da API',
+      flex: 0.4,
+    },
+    {
       field: 'actions',
       headerName: 'Qtd. de ações',
       type: 'number',

@@ -1,8 +1,10 @@
 import asyncio
+import functools
 import hashlib
 import json
 import socket
 import time
+from typing import Any, Dict
 
 import bcrypt
 import src.configs.constants as constants
@@ -62,3 +64,60 @@ def hash_device_config(device_config: DeviceConfiguration):
   encoded = json.dumps(config_dict, sort_keys=True).encode()
   dhash.update(encoded)
   return dhash.hexdigest()
+
+def get_nested_value(data_dict: dict, key_path: str):
+    """
+    Retrieves a value from a nested dictionary using a dot-separated key path.
+    """
+    try:
+        return functools.reduce(lambda d, key: d[key], key_path.split('.'), data_dict)
+    except (KeyError, TypeError, AttributeError):
+        return None
+
+def get_value_from_response(response: Any, path: str) -> Any:
+  """
+  Extracts a value from a requests.Response object or a JSON dict
+  using a dot-separated path.
+
+  Special prefixes:
+  - 'cookies.' -> accesses response.cookies
+  - 'headers.' -> accesses response.headers
+  - 'json.'    -> accesses response.json()
+  """
+  if not path:
+      return None
+
+  try:
+    if path.startswith('cookies.'):
+      key = path.split('.', 1)[1]
+      return response.cookies.get(key)
+    elif path.startswith('headers.'):
+      key = path.split('.', 1)[1]
+      return response.headers.get(key)
+    elif path.startswith('json.'):
+      key_path = path.split('.', 1)[1]
+      return get_nested_value(response.json(), key_path)
+    else:
+      return get_nested_value(response, key_path=path)
+  except Exception:
+    return None
+
+def hydrate_payload(template: Any, values: Dict[str, str]) -> Any:
+  """
+  Recursively replaces placeholder strings in a payload template.
+  Placeholders are in the format '{{KEY}}'.
+  """
+  if isinstance(template, dict):
+    # Recursively hydrate dictionary values
+    return {k: hydrate_payload(v, values) for k, v in template.items()}
+  elif isinstance(template, list):
+    # Recursively hydrate list items
+    return [hydrate_payload(item, values) for item in template]
+  elif isinstance(template, str):
+    # Replace placeholders in strings
+    for key, value in values.items():
+        template = template.replace(f"{{{{{key}}}}}", str(value))
+    return template
+  else:
+    # Return other types (int, bool, etc.) as-is
+    return template

@@ -62,12 +62,7 @@ class AdoptionController:
     if not wait_device_connectivity(host=device.ip_address):
       raise http_exceptions.DEVICE_INACCESSIBLE
 
-    device_api = DeviceAPI(ip_address=device.ip_address, user=device.user, password=device.password)
-
-    device_api.login()
-    device_info = device_api.get_device_statistics()['general']
-
-    device_config = device_api.get_device_config()
+    # Execute device driver actions
 
     device_to_adopt = Device(name=device_info['deviceName'],
                              mac_address=device.mac_address,
@@ -78,8 +73,7 @@ class AdoptionController:
                              fw_version=device_info['firmwareVersion']['active'],
                              location=device_info['deviceLocation'],
                              networkId=device.networkId)
-
-    return device_to_adopt, device_config
+    return device_to_adopt
 
   def _run_task(self):
     while True:

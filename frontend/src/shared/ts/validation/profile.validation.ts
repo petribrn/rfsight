@@ -1,10 +1,15 @@
 import Joi from 'joi';
 
 const HttpDetailsSchema = Joi.object({
-  port: Joi.number().integer().default(80).label('Porta HTTP').messages({
-    'number.base': '{{#label}} deve ser um número.',
-    'number.integer': '{{#label}} deve ser um número inteiro.',
-  }),
+  port: Joi.number()
+    .integer()
+    .optional()
+    .default(80)
+    .label('Porta HTTP')
+    .messages({
+      'number.base': '{{#label}} deve ser um número.',
+      'number.integer': '{{#label}} deve ser um número inteiro.',
+    }),
   method: Joi.string()
     .valid('GET', 'PATCH', 'PUT', 'POST', 'DELETE')
     .required()
@@ -34,6 +39,7 @@ const HttpDetailsSchema = Joi.object({
     )
     .optional()
     .allow(null)
+    .empty(Joi.object().length(0))
     .label('Variáveis de Caminho')
     .messages({
       'object.base': '{{#label}} deve ser um objeto.',
@@ -42,11 +48,16 @@ const HttpDetailsSchema = Joi.object({
     .valid('file', 'text/plain', 'text/json')
     .optional()
     .allow(null)
+    .empty('')
     .label('Tipo de Payload')
     .messages({
       'any.only': '{{#label}} deve ser um dos seguintes: {#valids}.',
       'string.base': '{{#label}} deve ser um texto.',
     }),
+  payloadTemplate: Joi.any()
+    .optional()
+    .allow(null)
+    .empty(Joi.object().length(0)),
   responseType: Joi.string()
     .valid('text/plain', 'text/json', 'boolean', 'blank')
     .required()
@@ -60,7 +71,17 @@ const HttpDetailsSchema = Joi.object({
     .pattern(Joi.string(), Joi.string())
     .optional()
     .allow(null)
+    .empty(Joi.object().length(0))
     .label('Mapeamento da Resposta')
+    .messages({
+      'object.base': '{{#label}} deve ser um objeto.',
+    }),
+  responseHeaderMapping: Joi.object()
+    .pattern(Joi.string(), Joi.string())
+    .optional()
+    .allow(null)
+    .empty(Joi.object().length(0))
+    .label('Mapeamento de Headers')
     .messages({
       'object.base': '{{#label}} deve ser um objeto.',
     }),
@@ -82,11 +103,11 @@ const SshDetailsSchema = Joi.object({
 // Schema for a single Action
 export const ActionSchema = Joi.object({
   actionType: Joi.string()
-    .valid('monitor', 'manage')
+    .valid('auth', 'monitor', 'manage')
     .required()
     .label('Tipo de Ação')
     .messages({
-      'any.only': '{{#label}} deve ser "monitor" ou "manage".',
+      'any.only': '{{#label}} deve ser "auth", "monitor" ou "manage".',
       'any.required': '{{#label}} é obrigatório.',
       'string.base': '{{#label}} deve ser um texto.',
     }),
@@ -129,6 +150,25 @@ export const ActionSchema = Joi.object({
         'any.required':
           'Detalhes HTTP devem ser definidos como nulos quando o protocolo é "ssh".',
       }),
+    }),
+  })
+  .when(Joi.object({ actionType: Joi.valid('auth') }).unknown(), {
+    then: Joi.object({
+      // 1. Enforce protocol must be 'http'
+      protocol: Joi.valid('http').required().messages({
+        'any.only':
+          'Tipo de ação "auth" só é permitido com o protocolo "http".',
+      }),
+      // 2. Extend the httpDetails schema
+      httpDetails: HttpDetailsSchema.keys({
+        // 3. Make payloadTemplate required
+        payloadTemplate: Joi.required().messages({
+          'any.required':
+            'Payload Template é obrigatório para ações de autenticação.',
+        }),
+      }),
+      // 5. Re-enforce that sshDetails must be null
+      sshDetails: Joi.valid(null).required(),
     }),
   })
   .label('Ação')

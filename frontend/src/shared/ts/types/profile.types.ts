@@ -8,16 +8,18 @@ export type HttpDetails = {
   method: 'GET' | 'PATCH' | 'PUT' | 'POST' | 'DELETE';
   successStatusCode: number;
   path: string;
-  pathVariables?: { [key: string]: string | number | boolean };
-  payloadType?: 'file' | 'text/plain' | 'text/json';
+  pathVariables?: { [key: string]: string | number | boolean } | null;
+  payloadType?: 'file' | 'text/plain' | 'text/json' | '';
   responseType: 'text/plain' | 'text/json' | 'boolean' | 'blank';
-  responseMapping: { [key: string]: string };
+  payloadTemplate?: any;
+  responseMapping?: { [key: string]: string } | null;
+  responseHeaderMapping?: { [key: string]: string } | null;
 };
 
 export type ProfileActions = { [key: string]: ProfileAction };
 
 export type ProfileAction = {
-  actionType: 'monitor' | 'manage';
+  actionType: 'monitor' | 'manage' | 'auth';
   protocol: 'http' | 'ssh';
   sshDetails?: SshDetails | null;
   httpDetails?: HttpDetails | null;
@@ -31,6 +33,7 @@ export type ActionToEdit = {
 export type ProfileData = {
   id: string;
   name: string;
+  apiBaseUrl: string;
   actions: ProfileActions;
   createdAt: Date;
   updatedAt: Date;
@@ -38,12 +41,14 @@ export type ProfileData = {
 
 export type ProfileUpdateData = {
   name?: string;
+  apiBaseUrl?: string;
   actions?: ProfileActions;
 };
 
 export type ProfileRow = {
   id: string;
   name: string;
+  apiBaseUrl: string;
   actions: ProfileActions;
   createdAt: Date;
   updatedAt: Date;

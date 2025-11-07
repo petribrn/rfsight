@@ -1,6 +1,7 @@
 import ipaddress
 import re
 from datetime import datetime
+from email.policy import default
 from typing import List, Optional
 
 import pytz
@@ -18,12 +19,20 @@ from typing_extensions import Annotated
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class DeviceToAdopt(BaseModel):
-  mac_address: Optional[str] = Field(min_length=12, default=None)
-  ip_address: Optional[str] = Field(default=None)
-  user: str = Field(default='admin')
-  password: str = Field(default='admin')
+  id: Optional[PyObjectId] = Field(alias="_id", default=None)
+  is_active: Optional[bool] = Field(default=None)
+  name: Optional[str] = Field(min_length=3, default=None)
+  mac_address: str = Field(min_length=12, default=None)
+  ip_address: Optional[str] = Field(...)
+  model: Optional[str] = Field(min_length=3, default=None)
+  user: str = Field(...)
+  password: str = Field(...)
+  fw_version: Optional[str] = Field(min_length=1, default=None)
+  location: Optional[str] = Field(min_length=3, default=None)
   networkId: PyObjectId | None = Field(default=None)
   profileId: PyObjectId | None = Field(default=None)
+  createdAt: Optional[datetime | None] = Optional[Field(...)]
+  updatedAt: Optional[datetime | None] = Optional[Field(...)]
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):
@@ -102,7 +111,6 @@ class Device(BaseModel):
   location: str = Field(min_length=3)
   networkId: PyObjectId | None = Field(default=None)
   profileId: PyObjectId | None = Field(default=None)
-  configId: PyObjectId | None = Field(default=None)
   createdAt: datetime | None = Optional[Field(...)]
   updatedAt: datetime | None = Optional[Field(...)]
 
@@ -180,22 +188,6 @@ class Device(BaseModel):
         'invalid_profileId_error',
         'O profileId do dispositivo é inválido.',
         {'profileId': value},
-      )
-
-  @field_validator('configId')
-  def validate_configId(cls, value):
-    if value is None:
-      return value
-    try:
-      is_valid_id = ObjectId.is_valid(value)
-      if not is_valid_id:
-        raise Exception
-      return value
-    except Exception as e:
-      raise PydanticCustomError(
-        'invalid_configId_error',
-        'O configId do dispositivo é inválido.',
-        {'configId': value},
       )
 
 class DeviceCollection(BaseModel):

@@ -25,6 +25,7 @@ export * from './DeviceListCustomContextMenu';
 export * from './ForgotPasswordForm';
 export * from './Header';
 export * from './IPAddressTextMask';
+export * from './JsonPayloadEditor';
 export * from './MacAddressTextMask';
 export * from './NetworkActionsMenu';
 export * from './NetworkCreationDialog';

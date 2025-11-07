@@ -23,6 +23,7 @@ from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
 from src.repositories.profile import ProfileRepository
+from src.services.device_driver import DeviceDriver
 from src.services.oauth import get_current_user
 from src.shared.utils import validate_id
 from sse_starlette import EventSourceResponse
@@ -84,51 +85,59 @@ async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = De
     field = 'mac_address' if device_adopt_data.mac_address else 'ip_address'
     value = device_adopt_data.mac_address if field == 'mac_address' else device_adopt_data.ip_address
 
-    device, config = await adoption_controller.find_device(device=device_adopt_data)
+    profile = await ProfileRepository.get_profile_by(db=db, field='_id', value=device_adopt_data.profileId)
+    if not profile:
+      raise http_exceptions.DEVICE_TO_ADOPT_NOT_FOUND
 
-    device_already_adopted = await DeviceRepository.get_device_by(db, field='mac_address', value=device.mac_address)
-    if device_already_adopted:
-      raise http_exceptions.DEVICE_ALREADY_ADOPTED
+    device_driver = DeviceDriver(device=device_adopt_data, profile=profile)
 
-    device_config = Configuration(configs=config)
+    device = await adoption_controller.find_device(device=device_adopt_data)
 
-    if device.networkId:
-      # Check if network exists
-      device_network = await NetworkRepository.get_network_by(db, field='_id', value=device.networkId)
-      if not device_network:
-        raise http_exceptions.DOCUMENT_INEXISTENT(document='rede do dispositivo')
+    return device
 
-    if device.profileId:
-      # Check if profile exists
-      device_profile = await ProfileRepository.get_profile_by(db, field='_id', value=device.profileId)
-      if not device_profile:
-        raise http_exceptions.DOCUMENT_INEXISTENT(document='profile do dispositivo')
-    else:
-      device.is_active = False
+    # device_already_adopted = await DeviceRepository.get_device_by(db, field='mac_address', value=device.mac_address)
+    # if device_already_adopted:
+    #   raise http_exceptions.DEVICE_ALREADY_ADOPTED
 
-    # Create a new device document
-    new_device_id = await DeviceRepository.create_device(db, new_device_data=device)
-    new_device_obj = await DeviceRepository.get_device_by(db, field='_id', value=new_device_id)
+    # device_config = Configuration(configs=config)
 
-    device_config.deviceId = new_device_id
+    # if device.networkId:
+    #   # Check if network exists
+    #   device_network = await NetworkRepository.get_network_by(db, field='_id', value=device.networkId)
+    #   if not device_network:
+    #     raise http_exceptions.DOCUMENT_INEXISTENT(document='rede do dispositivo')
 
-    new_config_id = await ConfigurationRepository.create_configuration(db, new_configuration_data=device_config)
+    # if device.profileId:
+    #   # Check if profile exists
+    #   device_profile = await ProfileRepository.get_profile_by(db, field='_id', value=device.profileId)
+    #   if not device_profile:
+    #     raise http_exceptions.DOCUMENT_INEXISTENT(document='profile do dispositivo')
+    # else:
+    #   device.is_active = False
 
-    updated_device_configid = new_device_obj.model_copy()
-    updated_device_configid.configId = new_config_id
+    # # Create a new device document
+    # new_device_id = await DeviceRepository.create_device(db, new_device_data=device)
+    # new_device_obj = await DeviceRepository.get_device_by(db, field='_id', value=new_device_id)
 
-    updated_device = await DeviceRepository.edit_device_by_id(db, device_id=new_device_id,
-                                                              new_device_data=updated_device_configid)
+    # device_config.deviceId = new_device_id
 
-    # Move device into network
-    device_moved_to_net = await NetworkRepository.move_device_to_network(db,
-                                                                         device_id=new_device_obj.id,
-                                                                         initial_network_id=None,
-                                                                         target_network_id=new_device_obj.networkId)
-    if not device_moved_to_net:
-      raise http_exceptions.MOVE_DEVICE_TO_NET_FAILED
+    # new_config_id = await ConfigurationRepository.create_configuration(db, new_configuration_data=device_config)
 
-    return {'success': True, 'message': f'Dispositivo adotado.'}
+    # updated_device_configid = new_device_obj.model_copy()
+    # updated_device_configid.configId = new_config_id
+
+    # updated_device = await DeviceRepository.edit_device_by_id(db, device_id=new_device_id,
+    #                                                           new_device_data=updated_device_configid)
+
+    # # Move device into network
+    # device_moved_to_net = await NetworkRepository.move_device_to_network(db,
+    #                                                                      device_id=new_device_obj.id,
+    #                                                                      initial_network_id=None,
+    #                                                                      target_network_id=new_device_obj.networkId)
+    # if not device_moved_to_net:
+    #   raise http_exceptions.MOVE_DEVICE_TO_NET_FAILED
+
+    # return {'success': True, 'message': f'Dispositivo adotado.'}
   except HTTPException as h:
     raise h
   except Exception as e:

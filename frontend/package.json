@@ -23,6 +23,7 @@
     "axios": "^1.11.0",
     "chart.js": "^4.5.0",
     "joi": "^18.0.0",
+    "json-edit-react": "^1.29.0",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-apexcharts": "^1.7.0",

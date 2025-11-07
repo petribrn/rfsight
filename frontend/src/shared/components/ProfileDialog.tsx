@@ -208,7 +208,6 @@ export const ProfileDialog = ({
             label="Nome do profile"
             variant="outlined"
             fullWidth
-            autoFocus
             autoComplete="new-password"
             type="text"
             onChange={(e) =>
