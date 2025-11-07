@@ -16,7 +16,7 @@ from src.shared.utils import (get_nested_value, get_value_from_response,
 # We add DEVICE_IP, DEVICE_USER, DEVICE_PASSWORD from the device object.
 # Others (like {{cookies.token}}) come from the response itself.
 BASE_PLACEHOLDERS = {
-    "DEVICE_IP": "device.ip_address",
+    "DEVICE_IP_ADDRESS": "device.ip_address",
     "DEVICE_MAC_ADDRESS": "device.mac_address",
     "DEVICE_USER": "device.user",
     "DEVICE_PASSWORD": "device.password",
@@ -43,7 +43,7 @@ class DeviceDriver:
     for key, path in BASE_PLACEHOLDERS.items():
         self.placeholder_values[key] = get_nested_value(device.model_dump(), path.replace('device.', ''))
 
-    # Hydrate baseUrl, e.g., 'http://{{DEVICE_IP}}/cgi-bin/main.cgi'
+    # Hydrate baseUrl, e.g., 'http://{{DEVICE_IP}}/api'
     self.base_url = hydrate_payload(self.profile.apiBaseUrl, self.placeholder_values)
 
     # HTTP State
@@ -124,7 +124,7 @@ class DeviceDriver:
             separator = "?" if "?" not in url_path else "&"
             url_path += separator + query_string
 
-    url = self.base_url + url_path
+    url = self.base_url + (f":{http_details.port}" if http_details.port != 80 else '') + url_path
 
     # 2. Prepare Payload
     data_to_send = None
@@ -141,25 +141,22 @@ class DeviceDriver:
             "method": http_details.method,
             "url": url,
             "timeout": 10,
-            "port": http_details.port
         }
         if http_details.payloadType == 'text/json' and data_to_send:
             request_args["json"] = data_to_send
         elif http_details.payloadType == 'text/plain' and data_to_send:
             request_args["data"] = str(data_to_send)
 
-        # 4. Execute Request
+        # Execute Request
         response = self.http_session.request(**request_args)
 
-        # 5. Check Status Code
         if response.status_code != http_details.successStatusCode:
             raise http_exceptions.DEVICE_API_FAIL(
                 f"Ação falhou com status {response.status_code}. Resposta: {response.text}"
             )
 
-        # 6. Handle Auth Header Mapping (if this was an auth action)
+        # If auth -> handle header mapping
         if action.actionType == 'auth' and http_details.responseHeaderMapping:
-            # Find all unique placeholders (e.g., 'cookies.token')
             placeholders_to_find = set()
             regex = r"\{\{(.*?)\}\}" # Find text inside {{...}}
             for template_string in http_details.responseHeaderMapping.values():
@@ -186,7 +183,7 @@ class DeviceDriver:
         raw_data = response.json() if http_details.responseType == 'text/json' else response.text
 
         if not http_details.responseMapping:
-            return raw_data # Return raw data if no mapping
+            return raw_data
 
         # Apply response mapping
         mapped_data = {}
@@ -210,7 +207,7 @@ class DeviceDriver:
 
     try:
         with paramiko.SSHClient() as client:
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # Not for production
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
             client.connect(
                 hostname=self.device.ip_address,
@@ -230,8 +227,6 @@ class DeviceDriver:
                 raise http_exceptions.DEVICE_API_FAIL(f"Erro SSH: {error}")
 
             output = stdout.read().decode().strip()
-
-            # TODO: Add text-based response mapping for SSH if needed
 
             return output
 

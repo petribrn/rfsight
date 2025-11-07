@@ -78,12 +78,12 @@ export const DeviceAdoptionDialog = ({
 
   useEffect(() => {
     if (!isLoadingOrgNetworks) {
-      if (networks) {
+      if (networks && networks.networks.length > 0 ) {
         setSelectedNetwork(networks.networks[0].id);
       }
     }
     if (!isLoadingProfiles) {
-      if (profiles) {
+      if (profiles && profiles.profiles.length > 0) {
         setSelectedProfile(profiles.profiles[0].id);
       }
     }
@@ -129,7 +129,7 @@ export const DeviceAdoptionDialog = ({
     if (adoptErrMsg) setAdoptErrMsg('');
 
     const adoptDevicePayload: IAdoptDevicePayload = {
-      mac_address: macAddress === '' ? null : macAddress,
+      mac_address: macAddress === '' ? null : macAddress.toUpperCase(),
       ip_address: ipAddress === '' ? null : ipAddress,
       user,
       password,
@@ -362,7 +362,7 @@ export const DeviceAdoptionDialog = ({
         <Box display={'flex'} gap={1} flexDirection={'row'}>
           {!isLoadingOrgNetworks && networks ? (
             <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
-              <InputLabel id="network-type-select-label" required>
+              <InputLabel id="network-type-select-label" disabled={networks.networks.length < 1} required>
                 Rede
               </InputLabel>
               <Select
@@ -371,7 +371,8 @@ export const DeviceAdoptionDialog = ({
                 value={selectedNetwork}
                 label="Tipo"
                 required
-                error={!selectedNetwork}
+                error={networks.networks.length > 0 && !selectedNetwork}
+                disabled={networks.networks.length < 1}
                 onChange={handleSelectNetwork}
               >
                 {networks.networks.map((option) => (
@@ -386,7 +387,7 @@ export const DeviceAdoptionDialog = ({
           )}
           {!isLoadingProfiles && profiles ? (
             <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
-              <InputLabel id="profile-select-label" required>
+              <InputLabel id="profile-select-label" disabled={profiles.profiles.length < 1} required>
                 Profile
               </InputLabel>
               <Select
@@ -395,7 +396,8 @@ export const DeviceAdoptionDialog = ({
                 value={selectedProfile}
                 label="Tipo"
                 required
-                error={!selectedProfile}
+                error={profiles.profiles.length > 0 && !selectedProfile}
+                disabled={profiles.profiles.length < 1}
                 onChange={handleSelectProfile}
               >
                 {profiles.profiles.map((option) => (
@@ -415,7 +417,7 @@ export const DeviceAdoptionDialog = ({
           fullWidth
           type="submit"
           sx={{ marginTop: '1rem' }}
-          disabled={!networks || isLoadingOrgNetworks || isLoading}
+          disabled={!networks || !profiles || isLoadingOrgNetworks || isLoading}
         >
           Adotar
         </Button>

@@ -37,9 +37,9 @@ export const DevicesPage = () => {
     useGetProfilesCollectionQuery();
 
   const getProfileName = (profileId: string) => {
-    return profiles?.profiles
+    return profiles ? profiles.profiles
       .filter((profile) => profile.id === profileId)
-      .map((profile) => profile.name)[0];
+      .map((profile) => profile.name)[0] : '';
   };
 
   const DeviceListColumns: GridColDef<DeviceRow>[] = [

@@ -28,7 +28,9 @@ app.include_router(configurations.router)
 origins = ['https://localhost',
            'localhost',
           'https://localhost:6791',
-          'https://local.rfsight.com']
+          'https://local.rfsight.com',
+          '15.0.0.3'
+          ]
 
 app.add_middleware(
   CORSMiddleware,

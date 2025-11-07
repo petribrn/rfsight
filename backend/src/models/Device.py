@@ -18,12 +18,16 @@ from typing_extensions import Annotated
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+class DiscoveredDevice(BaseModel):
+  mac_address: str = Field(min_length=12, default=None)
+  ip_address: str = Field(...)
+
 class DeviceToAdopt(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
   is_active: Optional[bool] = Field(default=None)
   name: Optional[str] = Field(min_length=3, default=None)
   mac_address: str = Field(min_length=12, default=None)
-  ip_address: Optional[str] = Field(...)
+  ip_address: Optional[str] = Field(default=None)
   model: Optional[str] = Field(min_length=3, default=None)
   user: str = Field(...)
   password: str = Field(...)
@@ -101,14 +105,14 @@ class DeviceToAdopt(BaseModel):
 class Device(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
   is_active: bool = Field(default=None)
-  name: str = Field(min_length=3)
+  name: str = Field(min_length=3, default='Dispositivo')
   mac_address: str = Field(min_length=12)
   ip_address: str = Field(...)
-  model: str = Field(min_length=3)
+  model: str = Field(min_length=3, default='Desconhecido')
   user: str = Field(...)
   password: str = Field(...)
-  fw_version: str = Field(min_length=1)
-  location: str = Field(min_length=3)
+  fw_version: str = Field(min_length=1, default='N/A')
+  location: str = Field(min_length=3, default='Desconhecida')
   networkId: PyObjectId | None = Field(default=None)
   profileId: PyObjectId | None = Field(default=None)
   createdAt: datetime | None = Optional[Field(...)]
