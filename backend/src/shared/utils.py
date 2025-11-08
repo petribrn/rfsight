@@ -2,9 +2,10 @@ import asyncio
 import functools
 import hashlib
 import json
+import re
 import socket
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import bcrypt
 import src.configs.constants as constants
@@ -119,5 +120,35 @@ def hydrate_payload(template: Any, values: Dict[str, str]) -> Any:
         template = template.replace(f"{{{{{key}}}}}", str(value))
     return template
   else:
-    # Return other types (int, bool, etc.) as-is
     return template
+
+async def async_ping(host: str) -> Tuple[bool, float | None]:
+    """
+    Performs an async ICMP ping to check device status and latency.
+    Returns (is_online, latency_ms).
+    """
+    command = f"ping -c 1 -W 1 {host}"
+
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=2.0)
+
+        if proc.returncode == 0:
+            output = stdout.decode()
+            match = re.search(r"time=([\d\.]+)\s*ms", output)
+            if match:
+                return True, float(match.group(1))
+            return True, None
+        else:
+            return False, None
+
+    except asyncio.TimeoutError:
+        print(f"Ping timeout for {host}")
+        return False, None
+    except Exception as e:
+        print(f"Ping error for {host}: {e}")
+        return False, None

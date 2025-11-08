@@ -1,4 +1,6 @@
+import asyncio
 import ssl
+from contextlib import asynccontextmanager
 
 import src.configs.constants as constants
 import uvicorn
@@ -14,7 +16,12 @@ from src.routers import (auth, configurations, devices, monitor, networks,
 
 load_dotenv()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  asyncio.create_task(monitor.monitor_loop())
+  yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -23,14 +30,21 @@ app.include_router(profiles.router)
 app.include_router(organizations.router)
 app.include_router(networks.router)
 app.include_router(configurations.router)
-# app.include_router(monitor.router)
+app.include_router(monitor.router)
 
-origins = ['https://localhost',
-           'localhost',
-          'https://localhost:6791',
-          'https://local.rfsight.com',
-          '15.0.0.3'
-          ]
+# UPDATED list to be more robust
+origins = [
+    'https://localhost:6791',       # For Vite dev server
+    'https://localhost:6791/',      # For browsers that add a trailing slash
+    'https://local.rfsight.com:6791', # If you access vite via the domain
+    'https://local.rfsight.com:6791/',# Trailing slash version
+    'https://local.rfsight.com',    # For production/nginx
+    'https://local.rfsight.com/',   # Trailing slash version
+    'https://localhost',            # For other local services
+    'localhost',                     # For other local services
+    '15.0.0.3',
+    '172.18.0.3'
+]
 
 app.add_middleware(
   CORSMiddleware,

@@ -67,6 +67,7 @@ class DeviceDriver:
 
     # Automatically authenticate if this is not an auth action
     if action.actionType != 'auth' and action.protocol == 'http' and not self.http_is_authenticated:
+        print('authenticating')
         self._authenticate_http()
 
     if action.protocol == 'http':
