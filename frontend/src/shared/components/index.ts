@@ -28,7 +28,7 @@ export * from './IPAddressTextMask';
 export * from './JsonPayloadEditor';
 export * from './MacAddressTextMask';
 export * from './NetworkActionsMenu';
-export * from './NetworkCreationDialog';
+export * from './NetworkDialog';
 export * from './NetworkList';
 export * from './NoNetworksAvailable';
 export * from './OrganizationCreation';
@@ -49,3 +49,4 @@ export * from './styled/FormPaper';
 export * from './styled/PageGridContainer';
 export * from './styled/TabPanelPaper';
 export * from './TabPanel';
+

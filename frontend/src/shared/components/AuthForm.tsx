@@ -22,6 +22,7 @@ import {
 } from '../store/slices/auth/authSlice';
 import { useGetUserInfoPostAuthMutation } from '../store/slices/user/userApiSlice';
 import { setUserInfo } from '../store/slices/user/userSlice';
+import { websocketUrl } from '../ts/enums';
 import { DefaultApiError } from '../ts/interfaces';
 import { FormPaper } from './styled/FormPaper';
 
@@ -57,6 +58,10 @@ export const AuthForm = () => {
       // Get user complete info and populate state
       const userInfoResponse = await getUserInfoPostAuth(user).unwrap();
       dispatch(setUserInfo(userInfoResponse));
+      dispatch({
+        type: "websocket/connect",
+        payload: { url: websocketUrl },
+      })
       setUser('');
       setPasswd('');
       await toast.success('Login efetuado com sucesso.');

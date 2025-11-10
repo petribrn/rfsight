@@ -6,6 +6,7 @@ import {
   ProfileActions,
   ProfileRow,
   ProfileUpdateData,
+  StationTable,
 } from '../types';
 
 export interface IProfileList {
@@ -38,6 +39,8 @@ export interface IActionDialogProps {
 
 export interface INewProfilePayload {
   name: string;
+  apiBaseUrl: string;
+  stationTable: StationTable;
   actions: ProfileActions;
 }
 

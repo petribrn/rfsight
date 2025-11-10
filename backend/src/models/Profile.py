@@ -5,6 +5,7 @@ from typing import Annotated, Any, Dict, List, Literal, Optional
 import pytz
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 from pydantic_core import PydanticCustomError
+from src.models.StationTable import StationTableModel
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -13,7 +14,7 @@ class HttpDetails(BaseModel):
   method: Literal['GET', 'PATCH', 'PUT', 'POST', 'DELETE'] = Field(default=None)
   successStatusCode: int = Field(default=200)
   path: str = Field(default=None)
-  pathVariables: Optional[Dict[str, (str | int | float | bool)]] = Field(default=None)
+  queryParameters: Optional[Dict[str, (str | int | float | bool)]] = Field(default=None)
   payloadType: Optional[Literal['file', 'text/plain', 'text/json']] = Field(default=None)
   payloadTemplate: Optional[Any] = Field(default=None)
   responseType: Literal['text/plain', 'text/json', 'boolean', 'blank'] = Field(default=None)
@@ -45,6 +46,7 @@ class Action(BaseModel):
 class Profile(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
   name: str = Field(default=None)
+  stationTable: StationTableModel = Field(default=None)
   apiBaseUrl: str = Field(default=None)
   actions: Dict[str, Action] = Field(default=None)
   createdAt: datetime | None = Optional[Field(...)]
@@ -71,6 +73,7 @@ class Profile(BaseModel):
 
 class ProfileUpdate(BaseModel):
   name: Optional[str] = Field(default=None)
+  stationTable: Optional[StationTableModel] = Field(default=None)
   apiBaseUrl: Optional[str] = Field(default=None)
   actions: Optional[Dict[str, Action]] = Field(default=None)
 

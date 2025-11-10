@@ -8,7 +8,7 @@ export type HttpDetails = {
   method: 'GET' | 'PATCH' | 'PUT' | 'POST' | 'DELETE';
   successStatusCode: number;
   path: string;
-  pathVariables?: { [key: string]: string | number | boolean } | null;
+  queryParameters?: { [key: string]: string | number | boolean } | null;
   payloadType?: 'file' | 'text/plain' | 'text/json' | '';
   responseType: 'text/plain' | 'text/json' | 'boolean' | 'blank';
   payloadTemplate?: any;
@@ -30,10 +30,17 @@ export type ActionToEdit = {
   actionData: ProfileAction;
 };
 
+export type StationTable = {
+  root_oid: string;
+  field_map: { [key: string]: string };
+  index_from: null | string | number;
+}
+
 export type ProfileData = {
   id: string;
   name: string;
   apiBaseUrl: string;
+  stationTable: StationTable;
   actions: ProfileActions;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +49,7 @@ export type ProfileData = {
 export type ProfileUpdateData = {
   name?: string;
   apiBaseUrl?: string;
+  stationTable?: StationTable;
   actions?: ProfileActions;
 };
 
@@ -49,6 +57,7 @@ export type ProfileRow = {
   id: string;
   name: string;
   apiBaseUrl: string;
+  stationTable: StationTable;
   actions: ProfileActions;
   createdAt: Date;
   updatedAt: Date;

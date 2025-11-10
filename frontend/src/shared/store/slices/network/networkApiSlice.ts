@@ -70,7 +70,7 @@ export const networkApiSlice = apiSlice.injectEndpoints({
     editNetworkById: builder.mutation<DefaultResponse, INetworkUpdatePayload>({
       query: (networkUpdatePayload) => {
         return {
-          url: `${ApiRoutes.Networks}/${networkUpdatePayload.id}`,
+          url: `${ApiRoutes.Networks}/${networkUpdatePayload.id}/edit`,
           method: 'PATCH',
           credentials: 'include',
           body: { ...networkUpdatePayload.newNetworkData },

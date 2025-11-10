@@ -11,7 +11,6 @@ import src.shared.http_exceptions as http_exceptions
 from src.database.db import DB
 from src.models.Device import Device, DeviceToAdopt, DiscoveredDevice
 from src.repositories.profile import ProfileRepository
-from src.services.device_api import DeviceAPI
 from src.services.device_driver import DeviceDriver
 from src.shared.utils import wait_device_connectivity
 
@@ -73,11 +72,11 @@ class AdoptionController:
     # Execute monitor actions (get inital device information)
     actions_to_run = []
     for action_name, action in profile.actions.items():
-        if action.actionType == 'monitor' and action.httpDetails and action.httpDetails.responseMapping:
-            actions_to_run.append(action_name)
+      if action.actionType == 'monitor' and action.httpDetails and action.httpDetails.responseMapping:
+        actions_to_run.append(action_name)
 
     if not actions_to_run:
-        print(f"Profile {profile.name} has no monitor actions with responseMapping. Adoption will use defaults.")
+      print(f"Profile {profile.name} sem actions de monitoramento com responseMapping. Usando defaults.")
 
     # Run all found actions concurrently in threads
     tasks = [asyncio.to_thread(device_driver.execute_action, action_name) for action_name in actions_to_run]
@@ -86,26 +85,26 @@ class AdoptionController:
     # Extract mapped data
     all_mapped_data = {}
     for i, res in enumerate(results):
-        action_name = actions_to_run[i]
-        if isinstance(res, Exception):
-            print(f"Adoption: Action '{action_name}' failed: {res}")
-        elif isinstance(res, dict):
-            all_mapped_data.update(res)
-        else:
-            print(f"Adoption: Action '{action_name}' did not return a dictionary.")
+      action_name = actions_to_run[i]
+      if isinstance(res, Exception):
+        print(f"Adoção: Ação '{action_name}' falhou: {res}")
+      elif isinstance(res, dict):
+        all_mapped_data.update(res)
+      else:
+        print(f"Adoção: Ação '{action_name}' não retornou um dict mapeado.")
 
     device_to_adopt = Device(
-        is_active=True,
-        name=all_mapped_data.get('name'),
-        mac_address=device.mac_address,
-        ip_address=device.ip_address,
-        model=all_mapped_data.get('model'),
-        user=device.user,
-        password=device.password,
-        fw_version=all_mapped_data.get('fw_version'),
-        location=all_mapped_data.get('location'),
-        networkId=device.networkId,
-        profileId=profile.id
+      is_active=True,
+      name=all_mapped_data.get('name'),
+      mac_address=device.mac_address,
+      ip_address=device.ip_address,
+      model=all_mapped_data.get('model'),
+      user=device.user,
+      password=device.password,
+      fw_version=all_mapped_data.get('fw_version'),
+      location=all_mapped_data.get('location'),
+      networkId=device.networkId,
+      profileId=profile.id
     )
 
     return device_to_adopt
@@ -118,9 +117,8 @@ class AdoptionController:
           current_macs = {dev.mac_address for dev in self.available_devices}
           new_devices = [dev for dev in devices_list if dev.mac_address not in current_macs]
           self.available_devices.extend(new_devices)
-          # Optional: Add logic to prune old/unreachable devices
       except Exception as e:
-        print(f"Error in AdoptionController _run_task: {e}")
+        print(f"Erro ao executar task de discovery de adoção: {e}")
 
   def __device_arp_scan(self):
     try:
@@ -138,12 +136,12 @@ class AdoptionController:
             formatted_mac_address = line[1].upper().replace(':', '').replace('-', '')
             devices_objects.append(DiscoveredDevice(ip_address=valid_ip.compressed, mac_address=formatted_mac_address))
           except ValueError as v:
-            print(f'Error in device arp scan line map: {v}')
+            print(f'Erro ao mapead dispositivo na descoberta: {v}')
             continue
 
       return devices_objects
     except Exception as e:
-      print(f'Error in device arp scan method: {e}') # Change for logging
+      print(f'Erro ao executar arp scan para adoção: {e}')
       return []
 
   def _create_thread(self):

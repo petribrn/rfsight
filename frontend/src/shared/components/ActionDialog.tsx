@@ -57,7 +57,7 @@ export const ActionDialog = ({
       password: mergeFieldsEnum[1],
     },
     responseHeaderMapping: {},
-    pathVariables: {},
+    queryParameters: {},
   };
 
   const defaultSshDetails: SshDetails = {
@@ -81,8 +81,8 @@ export const ActionDialog = ({
   const [mappingValuePath, setMappingValuePath] = useState('');
   const [headerMappingKey, setHeaderMappingKey] = useState('');
   const [headerMappingValuePath, setHeaderMappingValuePath] = useState('');
-  const [pathVarMappingKey, setPathVarMappingKey] = useState('');
-  const [pathVarMappingValuePath, setPathVarMappingValuePath] = useState('');
+  const [queryParamMappingKey, setQueryParamMappingKey] = useState('');
+  const [queryParamMappingValuePath, setQueryParamMappingValuePath] = useState('');
 
   const setAuthPayloadTemplateData = (payload: unknown) => {
     const updatedActionData = { ...currentActionData };
@@ -95,6 +95,8 @@ export const ActionDialog = ({
     setMappingValuePath('');
     setHeaderMappingKey('');
     setHeaderMappingValuePath('');
+    setQueryParamMappingKey('');
+    setQueryParamMappingValuePath('');
     setCurrentActionName('');
     setFormErrors({});
     setCurrentActionData(defaultAction);
@@ -247,37 +249,37 @@ export const ActionDialog = ({
     setFormErrors((prev) => ({ ...prev, responseHeaderMapping: '' }));
   };
 
-  const handleAddPathVarMapping = () => {
-    const key = pathVarMappingKey.trim();
-    const value = pathVarMappingValuePath.trim();
+  const handleAddQueryParamMapping = () => {
+    const key = queryParamMappingKey.trim();
+    const value = queryParamMappingValuePath.trim();
     if (!key || !value) {
       setFormErrors((prev) => ({
         ...prev,
-        pathVariables: 'Chave e Valor do Mapeamento são obrigatórios.',
+        queryParameters: 'Chave e Valor do query parameter são obrigatórios.',
       }));
       return;
     }
-    if (currentActionData.httpDetails?.pathVariables?.[key]) {
+    if (currentActionData.httpDetails?.queryParameters?.[key]) {
       setFormErrors((prev) => ({
         ...prev,
-        pathVariables: `Nome da path variable "${key}" já existe.`,
+        queryParameters: `Nome do query parameter "${key}" já existe.`,
       }));
       return;
     }
 
     handleFormChange(
-      'pathVariables',
+      'queryParameters',
       {
-        ...(currentActionData.httpDetails?.pathVariables ?? {}),
+        ...(currentActionData.httpDetails?.queryParameters ?? {}),
         [key]: value,
       },
       'httpDetails'
     );
 
     // Clear inputs and error
-    setPathVarMappingKey('');
-    setPathVarMappingValuePath('');
-    setFormErrors((prev) => ({ ...prev, pathVariables: '' }));
+    setQueryParamMappingKey('');
+    setQueryParamMappingValuePath('');
+    setFormErrors((prev) => ({ ...prev, queryParameters: '' }));
   };
 
   const handleRemoveMapping = (keyToRemove: string) => {
@@ -298,14 +300,14 @@ export const ActionDialog = ({
     handleFormChange('responseHeaderMapping', newMapping, 'httpDetails');
   };
 
-  const handleRemovePathVarMapping = (keyToRemove: string) => {
-    if (!currentActionData.httpDetails?.pathVariables) return;
+  const handleRemoveQueryParamMapping = (keyToRemove: string) => {
+    if (!currentActionData.httpDetails?.queryParameters) return;
 
     const newMapping = {
-      ...currentActionData.httpDetails.pathVariables,
+      ...currentActionData.httpDetails.queryParameters,
     };
     delete newMapping[keyToRemove];
-    handleFormChange('pathVariables', newMapping, 'httpDetails');
+    handleFormChange('queryParameters', newMapping, 'httpDetails');
   };
 
   const handleSubmit = (
@@ -833,7 +835,7 @@ export const ActionDialog = ({
                 </Box>
                 <Box>
                   <Typography variant="body2" gutterBottom>
-                    Mapeamento das Path Variables (Opcional)
+                    Mapeamento de Query Parameters (Opcional)
                   </Typography>
                   <Typography
                     variant="caption"
@@ -841,15 +843,15 @@ export const ActionDialog = ({
                     display="block"
                     sx={{ mb: 1.5 }}
                   >
-                    Mapeie path variables a serem adicionadas ao caminho da
-                    requisição, utilizando: [nome da path variable] | [valor].
+                    Mapeie query parameters a serem adicionadas ao caminho da
+                    requisição, utilizando: [nome do query param] | [valor].
                     <br></br> Exemplo de mapeamento: [type] | [general] /
                     Caminho da requisição:{' '}
                     <strong>/caminho?type=general</strong>
                   </Typography>
-                  {formErrors.pathVariables && (
+                  {formErrors.queryParameters && (
                     <Typography variant="caption" color="error" sx={{ mb: 1 }}>
-                      {formErrors.pathVariables}
+                      {formErrors.queryParameters}
                     </Typography>
                   )}
                   <Box
@@ -865,9 +867,9 @@ export const ActionDialog = ({
                         width: '40%',
                       }}
                       size="small"
-                      label="Nome da Path Variable"
-                      value={pathVarMappingKey}
-                      onChange={(e) => setPathVarMappingKey(e.target.value)}
+                      label="Nome do Query Parameter"
+                      value={queryParamMappingKey}
+                      onChange={(e) => setQueryParamMappingKey(e.target.value)}
                       placeholder="ex: type"
                     />
                     <TextField
@@ -876,9 +878,9 @@ export const ActionDialog = ({
                       }}
                       size="small"
                       label="Valor"
-                      value={pathVarMappingValuePath}
+                      value={queryParamMappingValuePath}
                       onChange={(e) =>
-                        setPathVarMappingValuePath(e.target.value)
+                        setQueryParamMappingValuePath(e.target.value)
                       }
                       placeholder="ex: general"
                     />
@@ -886,12 +888,12 @@ export const ActionDialog = ({
                       <span>
                         {' '}
                         <IconButton
-                          onClick={handleAddPathVarMapping}
+                          onClick={handleAddQueryParamMapping}
                           color="success"
                           size="small"
                           disabled={
-                            !pathVarMappingKey.trim() ||
-                            !pathVarMappingValuePath.trim()
+                            !queryParamMappingKey.trim() ||
+                            !queryParamMappingValuePath.trim()
                           }
                         >
                           <AddBoxOutlinedIcon fontSize="large" />
@@ -917,7 +919,7 @@ export const ActionDialog = ({
                       sx={{ overflow: 'auto', width: '100%', p: 0.5, pb: 0 }}
                     >
                       {Object.entries(
-                        currentActionData.httpDetails.pathVariables ?? {}
+                        currentActionData.httpDetails.queryParameters ?? {}
                       ).length > 0 ? (
                         <List
                           sx={{
@@ -928,7 +930,7 @@ export const ActionDialog = ({
                           }}
                         >
                           {Object.entries(
-                            currentActionData.httpDetails.pathVariables ?? {}
+                            currentActionData.httpDetails.queryParameters ?? {}
                           ).map(([key, value]) => (
                             <ListItem
                               key={key}
@@ -946,7 +948,7 @@ export const ActionDialog = ({
                                     edge="end"
                                     size="small"
                                     onClick={() =>
-                                      handleRemovePathVarMapping(key)
+                                      handleRemoveQueryParamMapping(key)
                                     }
                                   >
                                     <DeleteIcon fontSize="inherit" />
@@ -971,7 +973,7 @@ export const ActionDialog = ({
                             fontSize={'small'}
                             color={alpha(theme.palette.text.primary, 0.5)}
                           >
-                            Path variables adicionadas aparecerão aqui
+                            Query Parameters adicionados aparecerão aqui
                           </Typography>
                           <MapOutlinedIcon
                             fontSize="small"

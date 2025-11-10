@@ -30,5 +30,4 @@ class ConnectionManager:
                 # Client disconnected uncleanly
                 self.active_connections.remove(connection)
 
-# Create a single instance to be imported by other files
-manager = ConnectionManager()
+websocket_connection_manager = ConnectionManager()

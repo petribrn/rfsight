@@ -89,6 +89,17 @@ export const DeviceAdoptionDialog = ({
     }
   }, [isLoadingOrgNetworks, isLoadingProfiles, networks, profiles]);
 
+
+  const setDefaultState = () => {
+    setMacAddress('');
+    setIpAddress('');
+    setUser('');
+    setPassword('');
+    setUseIpAddress(false);
+    setSelectedNetwork('');
+    setSelectedProfile('');
+  }
+
   // Handlers
   const handleFieldChange = (
     v: string,
@@ -160,11 +171,7 @@ export const DeviceAdoptionDialog = ({
     try {
       const adoptDeviceResult = await adoptDevice(adoptDevicePayload).unwrap();
       if (adoptDeviceResult) toast.success(adoptDeviceResult.message);
-      setMacAddress('');
-      setIpAddress('');
-      setUser('');
-      setPassword('');
-      setUseIpAddress(false);
+      setDefaultState();
       handleClose();
       return value;
     } catch (error) {
@@ -178,11 +185,7 @@ export const DeviceAdoptionDialog = ({
     <Dialog
       open={open}
       onClose={() => {
-        setMacAddress('');
-        setIpAddress('');
-        setUser('');
-        setPassword('');
-        setUseIpAddress(false);
+        setDefaultState();
         handleClose();
       }}
       onSubmit={handleSubmit}
@@ -200,7 +203,10 @@ export const DeviceAdoptionDialog = ({
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="body1">Adotar dispositivo</Typography>
           <Tooltip title="Fechar">
-            <IconButton onClick={handleClose}>
+            <IconButton onClick={() => {
+              setDefaultState();
+              handleClose();
+            }}>
               <CloseIcon fontSize="medium" />
             </IconButton>
           </Tooltip>

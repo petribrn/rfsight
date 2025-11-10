@@ -1,3 +1,4 @@
+import ipaddress
 from datetime import datetime
 from typing import List
 
@@ -126,6 +127,45 @@ class DeviceRepository:
     stored_new_device_data = await db.devices_collection.find_one_and_update({'_id': device_id},
                                                                              {'$set': new_device_data.model_dump(by_alias=True, exclude=['id'])},
                                                                              return_document=True)
+
+    return Device(**stored_new_device_data)
+
+  @classmethod
+  async def update_device_ip(cls, db: DB, device_id: ObjectId, new_ip_address: str) -> Device:
+    # Validate device ID and find the device
+    device = await cls.get_device_by(db, field="_id", value=device_id)
+    if not device:
+      raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
+
+    # If same IP, nothing to update
+    if device.ip_address == new_ip_address:
+      return device
+
+    try:
+      valid_new_ip_address = ipaddress.ip_address(new_ip_address)
+    except ValueError:
+      raise http_exceptions.INVALID_FIELD(field='new ip_address')
+
+    # Check if new IP address already exists in another device
+    ip_conflict = await cls.get_device_by(db, field="ip_address", value=valid_new_ip_address)
+    if ip_conflict:
+      raise http_exceptions.UNIQUE_FIELD_DATA_ALREADY_EXISTS(field='Endereço IP')
+
+    # Apply update
+    updated_at = datetime.fromisoformat(
+      datetime.now(tz=constants.LOCAL_TIMEZONE).isoformat()
+    )
+
+    update_data = {
+      "ip_address": valid_new_ip_address,
+      "updatedAt": updated_at
+    }
+
+    stored_new_device_data = await db.devices_collection.find_one_and_update(
+      {"_id": validate_id(device_id, "device_id")},
+      {"$set": update_data},
+      return_document=True
+    )
 
     return Device(**stored_new_device_data)
 

@@ -32,7 +32,7 @@ const HttpDetailsSchema = Joi.object({
     'string.base': '{{#label}} deve ser um texto.',
     'any.required': '{{#label}} é obrigatório.',
   }),
-  pathVariables: Joi.object()
+  queryParameters: Joi.object()
     .pattern(
       Joi.string(),
       Joi.alternatives().try(Joi.string(), Joi.number(), Joi.boolean())
@@ -40,7 +40,7 @@ const HttpDetailsSchema = Joi.object({
     .optional()
     .allow(null)
     .empty(Joi.object().length(0))
-    .label('Variáveis de Caminho')
+    .label('Query Parameters')
     .messages({
       'object.base': '{{#label}} deve ser um objeto.',
     }),
@@ -201,9 +201,76 @@ export const ProfileNameSchema = Joi.string()
     'any.required': '{{#label}} é obrigatório.',
   });
 
+
+export const ApiBaseUrlSchema = Joi.string()
+  .min(5)
+  .required()
+  .label('Api Base URL')
+  .messages({
+    'string.empty': '{{#label}} não deve estar vazio.',
+    'string.min': '{{#label}} deve ter no mínimo {#limit} caracteres.',
+    'string.base': '{{#label}} deve ser um texto.',
+    'any.required': '{{#label}} é obrigatório.',
+  });
+
+
+export const RootOIDSchema = Joi.string()
+  .min(5)
+  .required()
+  .label('OID Raiz')
+  .messages({
+    'string.empty': '{{#label}} não deve estar vazio.',
+    'string.min': '{{#label}} deve ter no mínimo {#limit} caracteres.',
+    'string.base': '{{#label}} deve ser um texto.',
+    'any.required': '{{#label}} é obrigatório.',
+  });
+
+export const IndexFromSchema = Joi.alternatives()
+  .try(Joi.string(), Joi.number(), Joi.allow(null))
+  .empty('')
+  .default(null)
+  .label('Index From')
+  .messages({
+    'string.base': '{{#label}} deve ser um texto.',
+    'number.base': '{{#label}} deve ser um número.',
+  });
+
+export const FieldMapKeySchema = Joi.string()
+  .min(1)
+  .required()
+  .label('Indice OID')
+  .messages({
+    'string.empty': '{{#label}} não deve estar vazia.',
+    'string.min': '{{#label}} deve ter no mínimo {#limit} caracteres.',
+  });
+
+export const FieldMapValueSchema = Joi.string()
+  .min(1)
+  .required()
+  .label('Campo da estação')
+  .messages({
+    'string.empty': '{{#label}} não deve estar vazio.',
+    'string.min': '{{#label}} deve ter no mínimo {#limit} caracteres.',
+  });
+
+export const StationTableSchema = Joi.object({
+    root_oid: RootOIDSchema,
+    index_from: IndexFromSchema,
+    field_map: Joi.object()
+      .pattern(Joi.string(), Joi.string())
+      .required()
+      .label('Mapeamento de Campos')
+      .messages({
+        'object.base': '{{#label}} deve ser um objeto.',
+      }),
+  });
+
+
 // Schema for the entire Profile
 export const ProfileSchema = Joi.object({
   name: ProfileNameSchema,
+  apiBaseUrl: ApiBaseUrlSchema,
+  stationTable: StationTableSchema,
   actions: ProfileActionsSchema,
 });
 
@@ -218,6 +285,8 @@ export const ProfileUpdateSchema = Joi.object({
       'string.base': '{{#label}} deve ser um texto.',
       'string.min': '{{#label}} deve ter no mínimo {#limit} caracteres.',
     }),
+  apiBaseUrl: ApiBaseUrlSchema.optional(),
+  stationTable: StationTableSchema.optional(),
   actions: Joi.object().optional().label('Ações do Perfil').messages({
     'object.base': '{{#label}} deve ser um objeto.',
     'object.unknown': 'Chave de ação inválida: {#key}',

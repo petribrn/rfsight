@@ -76,7 +76,7 @@ export const ProfilesPage = () => {
         <GridActionsCellItem
           key="edit"
           icon={<EditIcon />}
-          label="Edit"
+          label="Editar"
           onClick={() => handleEditProfile(params.row)}
         />,
         <GridActionsCellItem

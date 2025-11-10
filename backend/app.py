@@ -9,8 +9,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from src.configs.constants import API_PORT
+from src.controllers.MonitorController import MonitorController
+from src.database.db import get_db
 from src.routers import (auth, configurations, devices, monitor, networks,
                          organizations, profiles, users)
 
@@ -18,7 +19,9 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-  asyncio.create_task(monitor.monitor_loop())
+  app.state.db = get_db()
+  asyncio.create_task(MonitorController.device_monitor_loop(app=app))
+  asyncio.create_task(MonitorController.topology_loop(app=app))
   yield
 
 app = FastAPI(lifespan=lifespan)
@@ -32,18 +35,18 @@ app.include_router(networks.router)
 app.include_router(configurations.router)
 app.include_router(monitor.router)
 
-# UPDATED list to be more robust
 origins = [
-    'https://localhost:6791',       # For Vite dev server
-    'https://localhost:6791/',      # For browsers that add a trailing slash
-    'https://local.rfsight.com:6791', # If you access vite via the domain
-    'https://local.rfsight.com:6791/',# Trailing slash version
-    'https://local.rfsight.com',    # For production/nginx
-    'https://local.rfsight.com/',   # Trailing slash version
-    'https://localhost',            # For other local services
-    'localhost',                     # For other local services
+    'https://localhost:6791',
+    'https://localhost:6791/',
+    'https://local.rfsight.com:6791',
+    'https://local.rfsight.com:6791/',
+    'https://local.rfsight.com',
+    'https://local.rfsight.com/',
+    'https://localhost',
+    'localhost',
     '15.0.0.3',
-    '172.18.0.3'
+    '172.18.0.3',
+    'nginx'
 ]
 
 app.add_middleware(
@@ -55,8 +58,8 @@ app.add_middleware(
   expose_headers=["*"]
 )
 
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain(certfile=constants.SSL_CERT_PATH, keyfile=constants.SSL_KEY_PATH)
+# ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+# ssl_context.load_cert_chain(certfile=constants.SSL_CERT_PATH, keyfile=constants.SSL_KEY_PATH)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -69,4 +72,4 @@ async def root():
   return {'message': 'This API holds the operation of RFSight'}
 
 if __name__ == "__main__":
-  uvicorn.run("app:app", host="0.0.0.0", port=API_PORT, reload=True)
+  uvicorn.run("app:app", host="0.0.0.0", port=API_PORT, reload=True, ssl_keyfile='./certs/key.pem', ssl_certfile='./certs/cert.pem')

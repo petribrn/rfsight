@@ -21,6 +21,12 @@ services:
   api-rfsight:
     build: ./backend
     container_name: api-rfsight
+    privileged: true
+    pid: host
+    ipc: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     volumes:
       - ./backend:/app
     depends_on:

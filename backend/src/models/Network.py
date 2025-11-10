@@ -1,3 +1,4 @@
+import ipaddress
 import re
 from datetime import datetime
 from typing import List, Optional
@@ -14,6 +15,7 @@ class Network(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
   name: str = Field(min_length=3)
   network_type: str = Field(min_length=3)
+  network_cidr: str = Field(...)
   location: str = Field(min_length=3)
   devices: List[PyObjectId] = []
   organizationId: PyObjectId | None = Field(default=None)
@@ -43,12 +45,29 @@ class Network(BaseModel):
         {'networkId': value},
       )
 
+  @field_validator('network_cidr')
+  def validate_network_cidr(cls, value):
+    if value is None:
+      return value
+    value = str(value)
+
+    try:
+      ip = ipaddress.ip_network(value, strict=False)
+      return ip.compressed
+    except ValueError:
+      raise PydanticCustomError(
+        'invalid_network_cidr_error',
+        'CIDR da rede é inválido.',
+        {'network_cidr': value},
+      )
+
 class NetworkCollection(BaseModel):
   networks: List[Network]
 
 class NetworkUpdate(BaseModel):
   name: Optional[str] = None
   network_type: Optional[str] = None
+  network_cidr: Optional[str] = None
   location: Optional[str] = None
   organizationId: Optional[PyObjectId] | None = ''
 
@@ -75,6 +94,22 @@ class NetworkUpdate(BaseModel):
         {'network_type': value},
       )
     return value
+
+  @field_validator('network_cidr')
+  def validate_network_cidr(cls, value):
+    if value is None:
+      return value
+    value = str(value)
+
+    try:
+      ip = ipaddress.ip_network(value, strict=False)
+      return ip.compressed
+    except ValueError:
+      raise PydanticCustomError(
+        'invalid_network_cidr_error',
+        'CIDR da rede é inválido.',
+        {'network_cidr': value},
+      )
 
   @field_validator('location')
   @classmethod

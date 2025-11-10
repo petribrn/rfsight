@@ -17,3 +17,4 @@ export enum ApiRoutes {
 const host = location.hostname;
 
 export const backendUrl = `https://${host}/backend`;
+export const websocketUrl = `https://${host}/backend/monitor/ws`

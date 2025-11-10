@@ -128,7 +128,7 @@ async def edit_network(network_id: str, new_network_data: NetworkUpdate, current
         raise http_exceptions.MOVE_ITEM_TO_ORGANIZATION_FAILED(item_type='rede')
     # --------------------- ORGANIZATION RELATED ---------------------
 
-    return {'success': True, 'message': f'Rede {network_id} atualizada.'}
+    return {'success': True, 'message': f'Rede atualizada.'}
   except HTTPException as h:
     raise h
   except Exception as e:
@@ -160,12 +160,7 @@ async def delete_network(network_id: str, current_user: User = Depends(get_curre
     if not deleted_configs:
       raise http_exceptions.CONFIG_ACTION_FAILED(action='apagar')
 
-    # USE THIS LOGIC TO MIGRATE TO ANOTHER NETWORK
-    # removed_devices_net = await DeviceRepository.remove_devices_network(db, network_id=network_id)
-    # if not removed_devices_net:
-    #     raise http_exceptions.REMOVE_DEVICE_FROM_NET_FAILED
-
-    return {'success': True, 'message': f'Rede {deleted_network.id} deletada.'}
+    return {'success': True, 'message': f'Rede removida.'}
   except HTTPException as h:
     raise h
   except Exception as e:

@@ -37,6 +37,5 @@ class DB:
   def organizations_collection(self):
     return self.organizations_collection
 
-
 def get_db():
   return DB()
