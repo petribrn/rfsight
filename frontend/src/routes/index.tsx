@@ -86,7 +86,7 @@ export default function AppRoutes() {
             }
           />
           <Route
-            path="/devices/:deviceId/configure"
+            path="/devices/:networkId/:deviceId/configure"
             element={
               <PageWithSideMenu pageContent={<DeviceConfigurationPage />} />
             }

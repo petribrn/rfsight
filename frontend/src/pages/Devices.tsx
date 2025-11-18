@@ -144,7 +144,7 @@ export const DevicesPage = () => {
   };
 
   const handleConfigure = (device: DeviceRow) => {
-    navigate(`/devices/${device.id}/configure`);
+    navigate(`/devices/${device.network}/${device.id}/configure`);
   };
   const handleDeleteDevice = async () => {
     handleCloseConfirmation();

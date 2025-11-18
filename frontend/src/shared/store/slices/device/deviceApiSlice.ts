@@ -1,14 +1,16 @@
 import { ApiRoutes } from '../../../ts/enums';
 import { normalizeApiError } from '../../../ts/helpers';
 import {
+  ExecuteActionSequencePayload,
   IAdoptDevicePayload,
-  IGetDeviceCollectionPayload,
+  IGetDeviceCollectionPayload
 } from '../../../ts/interfaces';
 import {
   DefaultResponse,
   DeviceCollection,
   DeviceConfig,
   DeviceData,
+  ExecuteActionSequenceResponse,
 } from '../../../ts/types';
 import { apiSlice } from '../api/apiSlice';
 
@@ -40,6 +42,14 @@ export const deviceApiSlice = apiSlice.injectEndpoints({
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },
+    }),
+    executeActionSequence: builder.mutation<ExecuteActionSequenceResponse, ExecuteActionSequencePayload>({
+      query: (payload) => ({
+        url: `${ApiRoutes.Devices}/${payload.deviceId}/execute-sequence`,
+        method: 'POST',
+        body: payload.sequence,
+        credentials: 'include'
+      })
     }),
     getDeviceCollectionByOrgNetwork: builder.query<
       DeviceCollection,
@@ -102,6 +112,7 @@ export const deviceApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useAdoptDeviceMutation,
+  useExecuteActionSequenceMutation,
   useGetDeviceByIdQuery,
   useGetDeviceCollectionByOrgNetworkQuery,
   useGetDeviceCollectionByOrganizationQuery,

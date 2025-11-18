@@ -18,6 +18,7 @@ export * from './Dashboard/DevicesStatus';
 export * from './Dashboard/OrganizationTabs';
 export * from './DashboardAccordion';
 export * from './DataGridToolbar';
+export * from './DeviceActionExecutor';
 export * from './DeviceActionsMenu';
 export * from './DeviceAdoptionDialog';
 export * from './DeviceList';

@@ -1,8 +1,11 @@
+import { ActionSequenceResponse } from '../interfaces';
 import { Andromeda } from './configuration/andromeda/andromeda-config.types';
 import { Network } from './configuration/network/network-config.types';
 import { Services } from './configuration/services/services-config.types';
 import { System } from './configuration/system/system-config.types';
 import { Wireless } from './configuration/wireless/wireless-config.types';
+
+export type ExecuteActionSequenceResponse = Array<ActionSequenceResponse>
 
 export type DeviceData = {
   id: string;
