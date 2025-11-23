@@ -33,3 +33,12 @@ export type NetworkRow = {
 export type NetworkCollection = {
   networks: Array<NetworkData>;
 };
+
+export type NetworkMetrics = {
+  online: number,
+  offline: number,
+  total: number,
+  stations: number,
+  avgLatency: number,
+  health: number,
+};

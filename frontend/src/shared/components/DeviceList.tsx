@@ -2,7 +2,9 @@ import Box from '@mui/material/Box';
 import { gridClasses } from '@mui/x-data-grid';
 import { DataGrid } from '@mui/x-data-grid/DataGrid';
 import { useEffect, useState } from 'react';
+import { useAppSelector } from '../hooks';
 import { useGetDeviceCollectionByOrganizationQuery } from '../store/slices/device/deviceApiSlice';
+import { monitorSelectors } from '../store/slices/monitor/monitorSlice';
 import { IDeviceListProps } from '../ts/interfaces';
 import { DeviceRow } from '../ts/types';
 import { CustomNoResultsOverlay } from './CustomNoResultsOverlay';
@@ -19,6 +21,7 @@ export const DeviceList = ({
       organizationId,
       networkId,
     });
+  const monitorData = useAppSelector(monitorSelectors.selectEntities);
 
   const [rows, setRows] = useState<Array<DeviceRow>>([]);
 
@@ -42,6 +45,26 @@ export const DeviceList = ({
       );
     }
   }, [deviceCollection]);
+
+  useEffect(() => {
+    if (!monitorData) return;
+
+    setRows((prevRows) =>
+      prevRows.map((row) => {
+        const ws = monitorData[row.id];
+        if (!ws) return row;
+
+        return {
+          ...row,
+          online: ws.online,
+          latency: ws.latency,
+          updatedAt: ws.timestamp ? new Date(ws.timestamp) : row.updatedAt,
+          // IP might also be in stats (depends on backend)
+          ip_address: row.ip_address,
+        };
+      })
+    );
+  }, [monitorData]);
 
   return (
     <Box

@@ -51,6 +51,8 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
 
         if (!msg || !msg.messageType) return;
 
+        console.log(msg);
+
         // route by messageType
         switch (msg.messageType) {
           case 'deviceMonitor': {

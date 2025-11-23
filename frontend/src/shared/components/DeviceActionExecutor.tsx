@@ -1,10 +1,9 @@
-// frontend/src/shared/components/DeviceActionExecutor.tsx
-
 import AddIcon from '@mui/icons-material/Add';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorIcon from '@mui/icons-material/Error';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   Box,
   Button,
@@ -19,10 +18,11 @@ import {
   MenuItem,
   Paper,
   Select,
+  TextField,
   Tooltip,
   Typography,
   alpha,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -32,82 +32,151 @@ import {
   ActionSequenceResponse,
 } from '../ts/interfaces';
 import { DeviceData, ProfileData } from '../ts/types';
-import { JsonPayloadEditor } from './JsonPayloadEditor'; // Reusing your component
+import { JsonPayloadEditor } from './JsonPayloadEditor';
+
+/**
+ * Reads a File object and returns its Base64-encoded string content,
+ * without the "data:..." prefix.
+ */
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64String = (reader.result as string).split(',')[1];
+      if (base64String) {
+        resolve(base64String);
+      } else {
+        reject(new Error('Falha ao ler o arquivo como Base64.'));
+      }
+    };
+    reader.onerror = (error) => reject(error);
+  });
 
 interface Props {
   device: DeviceData;
   profile: ProfileData;
 }
 
+// Extend this type for UI display
+type SequenceItem = ActionExecutionPayload & {
+  _payloadDisplay: string;
+};
+
 export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
   const theme = useTheme();
 
-  // 1. RTK Hook for the mutation
   const [executeSequence, { isLoading }] = useExecuteActionSequenceMutation();
 
-  // 2. State for building the sequence
   const [selectedActionName, setSelectedActionName] = useState<string>('');
-  const [currentPayload, setCurrentPayload] = useState<object | null>(null);
-  const [sequence, setSequence] = useState<ActionExecutionPayload[]>([]);
 
-  // 3. State for displaying results
+  const [jsonPayload, setJsonPayload] = useState<object | null>(null);
+  const [plainTextPayload, setPlainTextPayload] = useState<string>('');
+  const [filePayload, setFilePayload] = useState<File | null>(null);
+
+  const [sequence, setSequence] = useState<SequenceItem[]>([]);
+
   const [results, setResults] = useState<ActionSequenceResponse[]>([]);
 
-  // Memoize the list of 'manage' actions from the profile
   const manageActions = useMemo(() => {
     return Object.entries(profile.actions)
       .filter(([, action]) => action.actionType === 'manage')
       .map(([name, action]) => ({ name, action }));
   }, [profile.actions]);
 
-  // Get the details of the currently selected action
-  const selectedActionDetails = manageActions.find(
-    (a) => a.name === selectedActionName
-  )?.action;
+  const selectedActionDetails = useMemo(() => {
+    return manageActions.find((a) => a.name === selectedActionName)?.action;
+  }, [selectedActionName, manageActions]);
 
-  // Handler to add an action to the sequence list
-  const handleAddToActionList = () => {
-    if (!selectedActionName) return;
+  const handleAddToActionList = async () => {
+    if (!selectedActionName || !selectedActionDetails) return;
 
-    // Check if payload is required but not provided
-    const expectsPayload = selectedActionDetails && selectedActionDetails.httpDetails?.payloadType === 'text/json';
-    if (expectsPayload && !currentPayload) {
-        toast.error('Payload é obrigatório para esta ação.');
-        return;
+    const payloadType = selectedActionDetails.httpDetails?.payloadType;
+    let finalPayload: Record<string, any> | null = null;
+    let payloadDisplay: string = 'Sem payload';
+
+    try {
+      if (payloadType === 'text/json') {
+        if (!jsonPayload) {
+          toast.error('Payload JSON é obrigatório.');
+          return;
+        }
+        finalPayload = jsonPayload as object;
+        payloadDisplay = JSON.stringify(finalPayload);
+      } else if (payloadType === 'text/plain') {
+        if (!plainTextPayload.trim()) {
+          toast.error('Payload de texto é obrigatório.');
+          return;
+        }
+        finalPayload = { text_payload: plainTextPayload };
+        payloadDisplay = `Texto: ${plainTextPayload.substring(0, 50)}...`;
+      } else if (payloadType === 'file') {
+        if (!filePayload) {
+          toast.error('Arquivo é obrigatório.');
+          return;
+        }
+        const base64String = await fileToBase64(filePayload);
+        finalPayload = {
+          file_payload_base64: base64String,
+          filename: filePayload.name,
+        };
+        payloadDisplay = `Arquivo: ${filePayload.name}`;
+      } else {
+        finalPayload = null;
+      }
+    } catch (error) {
+      toast.error(`Falha ao processar payload: ${error}`);
+      return;
     }
 
     setSequence([
       ...sequence,
       {
         action_name: selectedActionName,
-        payload: expectsPayload ? currentPayload : null, // Only add payload if needed
+        payload: finalPayload,
+        _payloadDisplay: payloadDisplay,
       },
     ]);
-    // Reset inputs
+
+    // Reset all payload inputs
     setSelectedActionName('');
-    setCurrentPayload(null);
+    setJsonPayload(null);
+    setPlainTextPayload('');
+    setFilePayload(null);
   };
+
+  const setDefaultState = () => {
+    setResults([]);
+    setSequence([]);
+    setSelectedActionName('');
+    setJsonPayload(null);
+    setPlainTextPayload('');
+    setFilePayload(null);
+  }
 
   // Handler to remove an action from the list
   const handleRemoveFromList = (indexToRemove: number) => {
     setSequence(sequence.filter((_, index) => index !== indexToRemove));
   };
 
-  // Handler to run the entire sequence
+  // Handler to run the entire action sequence
   const handleExecuteSequence = async () => {
     if (sequence.length === 0) return;
 
-    setResults([]); // Clear previous results
+    setResults([]);
     try {
-      // Call the API
       const response = await executeSequence({
         deviceId: device.id,
-        sequence: { actions: sequence },
+        sequence: {
+          actions: sequence.map(a => ({
+            action_name: a.action_name,
+            payload: a.payload
+          }))
+        },
       }).unwrap();
 
-      setResults(response); // Set results to display
+      setResults(response);
 
-      // Check the status of the *last* action
       const lastResult = response[response.length - 1];
       if (lastResult.status === 'failed') {
         toast.error(`Falha na execução: ${lastResult.message}`);
@@ -115,20 +184,92 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
         toast.success('Sequência executada com sucesso!');
       }
     } catch (err: any) {
-      toast.error(err.data?.detail || 'Um erro inesperado ocorreu.');
+      const errorMsg = (err as any).data?.detail || 'Um erro inesperado ocorreu.';
+      toast.error(errorMsg);
       setResults([
         {
           action: 'Cliente',
           status: 'failed',
-          message: err.data?.detail || 'Erro ao enviar requisição.',
+          message: errorMsg,
         },
       ]);
     }
   };
 
+  const renderPayloadInput = () => {
+    const httpDetails = selectedActionDetails?.httpDetails;
+    if (!httpDetails) {
+       return (
+         <Typography variant="caption" color="textSecondary">
+            Esta ação (SSH) não requer um payload JSON/Texto/Arquivo.
+         </Typography>
+      );
+    }
+
+    const payloadType = httpDetails.payloadType;
+
+    switch (payloadType) {
+      case 'text/json':
+        return (
+          <>
+            <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 1 }}>
+              Esta ação requer um payload JSON.
+            </Typography>
+            <JsonPayloadEditor
+              data={jsonPayload || {}}
+              setData={(d) => setJsonPayload(d as object)}
+              collapse={false}
+            />
+          </>
+        );
+      case 'text/plain':
+        return (
+          <>
+            <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 1 }}>
+              Esta ação requer um payload de texto plano.
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Payload (texto plano)"
+              value={plainTextPayload}
+              onChange={(e) => setPlainTextPayload(e.target.value)}
+            />
+          </>
+        );
+      case 'file':
+        return (
+          <>
+             <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 1 }}>
+              Esta ação requer um arquivo (ex: firmware).
+            </Typography>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<UploadFileIcon />}
+              fullWidth
+            >
+              {filePayload ? filePayload.name : 'Selecionar Arquivo'}
+              <input
+                type="file"
+                hidden
+                onChange={(e) => setFilePayload(e.target.files?.[0] || null)}
+              />
+            </Button>
+          </>
+        );
+      default:
+        return (
+         <Typography variant="caption" color="textSecondary">
+            Esta ação não requer payload.
+         </Typography>
+      );
+    }
+  };
+
   return (
     <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* --- 1. ACTION BUILDER --- */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="h6">Construtor de Ações</Typography>
         <FormControl fullWidth>
@@ -137,7 +278,12 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
             labelId="action-select-label"
             value={selectedActionName}
             label="Selecionar Ação"
-            onChange={(e) => setSelectedActionName(e.target.value)}
+            onChange={(e) => {
+              setSelectedActionName(e.target.value);
+              setJsonPayload(null);
+              setPlainTextPayload('');
+              setFilePayload(null);
+            }}
           >
             {manageActions.length === 0 && (
               <MenuItem disabled>Nenhuma ação 'manage' definida.</MenuItem>
@@ -149,29 +295,23 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
             ))}
           </Select>
         </FormControl>
-        {selectedActionDetails && selectedActionDetails.httpDetails?.payloadType === 'text/json' && (
+
+        {selectedActionName && (
           <Box>
-             <Typography variant="caption" color="textSecondary" display="block" sx={{mb: 1}}>
-                Esta ação requer um payload JSON.
-             </Typography>
-             <JsonPayloadEditor
-                data={currentPayload || {}}
-                setData={(d) => setCurrentPayload(d as object)}
-                collapse={false}
-             />
+            {renderPayloadInput()}
           </Box>
         )}
+
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={handleAddToActionList}
-          disabled={!selectedActionName}
+          disabled={!selectedActionName || isLoading}
         >
           Adicionar à Fila
         </Button>
       </Box>
 
-      {/* --- 2. ACTION SEQUENCE (TO-DO LIST) --- */}
       <Box>
         <Typography variant="h6">Fila de Execução</Typography>
         <List>
@@ -195,25 +335,34 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
             >
               <ListItemText
                 primary={`${index + 1}. ${action.action_name}`}
-                secondary={action.payload ? JSON.stringify(action.payload) : 'Sem payload'}
+                secondary={action._payloadDisplay}
+                slotProps={{
+                  secondary: {
+                    sx: {
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '80%'
+                    }
+                  }
+                }}
               />
             </ListItem>
           ))}
         </List>
       </Box>
 
-      {/* --- 3. EXECUTION & RESULTS --- */}
       <Box>
         <Button
           variant="contained"
           size="large"
           color="primary"
           startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <PlayArrowIcon />}
-          onClick={handleExecuteSequence}
+          onClick={results.length === 0 ? handleExecuteSequence:setDefaultState}
           disabled={sequence.length === 0 || isLoading}
           fullWidth
         >
-          {isLoading ? 'Executando...' : `Executar ${sequence.length} Ação(ões)`}
+          {isLoading ? 'Executando...' : results.length > 0 ? 'Nova execução' :`Executar ${sequence.length} Aç${sequence.length === 1 ? 'ão':'ões'}`}
         </Button>
 
         {results.length > 0 && (
@@ -234,7 +383,8 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
                     secondary={result.message}
                     slotProps={{
                       secondary: {
-                        color: result.status === 'failed' ? 'error' : 'textSecondary'
+                        color: result.status === 'failed' ? 'error' : 'textSecondary',
+                        sx: { whiteSpace: 'pre-wrap' }
                       }
                     }}
                   />

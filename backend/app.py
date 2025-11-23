@@ -46,7 +46,8 @@ origins = [
     'localhost',
     '15.0.0.3',
     '172.18.0.3',
-    'nginx'
+    'nginx',
+    'https://ui.rfsight.duckdns.org'
 ]
 
 app.add_middleware(
@@ -72,4 +73,4 @@ async def root():
   return {'message': 'This API holds the operation of RFSight'}
 
 if __name__ == "__main__":
-  uvicorn.run("app:app", host="0.0.0.0", port=API_PORT, reload=True, ssl_keyfile='./certs/key.pem', ssl_certfile='./certs/cert.pem')
+  uvicorn.run("app:app", host="0.0.0.0", port=API_PORT, reload=True)

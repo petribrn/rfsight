@@ -1,9 +1,8 @@
-// frontend/src/pages/DeviceConfiguration.tsx
-
 import {
   Box,
   Breadcrumbs,
   CircularProgress,
+  Grid,
   Tab,
   Tabs,
   Typography
@@ -51,7 +50,7 @@ export const DeviceConfigurationPage = () => {
   const organizationId = network?.organizationId
 
   // Loading state
-  if (isLoadingDevice || isLoadingProfile || !device || !profile) {
+  if (isLoadingDevice || isLoadingProfile || isLoadingNetwork || !device || !profile) {
     return (
       <PageGridCenteredContainer>
         <CircularProgress />
@@ -60,43 +59,36 @@ export const DeviceConfigurationPage = () => {
   }
 
   return (
-    <PageGridCenteredContainer>
-      <Box width={'100%'}>
-        <Typography variant="h5">{device?.name}</Typography>
-      </Box>
-      <Box width={'100%'}>
+    <Box display={'flex'} gap={3} flexDirection={'column'} width={'100%'} height={'100%'}>
+      <Grid>
         <Breadcrumbs aria-label="breadcrumb">
-          <BreadcrumbLink to="/">Dashboard</BreadcrumbLink>
+          <BreadcrumbLink to="/">Home</BreadcrumbLink>
           <BreadcrumbLink to={`/organizations/${organizationId}`}>
             {currentOrg?.name}
           </BreadcrumbLink>
-          <BreadcrumbLink to={`/organizations/${organizationId}/networks/${networkId}`}>
+          <BreadcrumbLink to={'/networks'}>
             {network?.name}
           </BreadcrumbLink>
-          <Typography color="text.primary">{device?.name}</Typography>
+          <Typography display={'flex'} gap={1} color="text.primary">{device?.name}{' '}({(device.mac_address &&`${device.mac_address.slice(0, 2)}:${device.mac_address.slice(2, 4)}:${device.mac_address.slice(4, 6)}:${device.mac_address.slice(6, 8)}:${device.mac_address.slice(8, 10)}:${device.mac_address.slice(10)}`) || device.ip_address})</Typography>
         </Breadcrumbs>
-      </Box>
+      </Grid>
 
-      {/* --- TABS --- */}
-      <Box width={'100%'}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Grid>
+        <Typography variant='h6' color='text.secondary'>Gerenciar dispositivo</Typography>
+        <Typography variant='caption' color='text.secondary'>Selecione as ações de gerenciamento a serem executadas (ordenadas) e adicione os respectivos payloads.</Typography>
+      </Grid>
+
+      <Grid>
+        <Grid sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="Configuração de Dispositivo">
             <Tab label="Ações" />
-            <Tab label="Configuração (Legado)" />
           </Tabs>
-        </Box>
+        </Grid>
 
-        {/* --- TAB 1: NEW ACTION EXECUTOR --- */}
         <TabPanel value={tabValue} index={0}>
            <DeviceActionExecutor device={device} profile={profile} />
         </TabPanel>
-
-        {/* --- TAB 2: OLD CONFIGURATION FORM --- */}
-        {/* <TabPanel value={tabValue} index={1}>
-          <Typography variant="h6" gutterBottom>Configuração (Legado)</Typography>
-          <ConfigurationForm />
-        </TabPanel> */}
-      </Box>
-    </PageGridCenteredContainer>
+      </Grid>
+    </Box>
   );
 };

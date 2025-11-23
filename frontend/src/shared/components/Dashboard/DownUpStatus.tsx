@@ -1,12 +1,12 @@
 import { Box, Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 
-interface IDownUpStatusProps {
-  networks: Array<string>;
+interface IProps {
+  download: number,
+  upload: number
 }
 
-export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
+export const DownUpStatus = ({ download, upload }: IProps) => {
   const theme = useTheme();
-  console.log(networks);
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 3}} height={'100%'}>
       <Paper
@@ -54,7 +54,7 @@ export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
                     theme.palette.companyExtra.light
                   )}
                 >
-                  123
+                  {download}
                 </Typography>
                 <Typography
                   align="center"
@@ -94,7 +94,7 @@ export const DownUpStatus = ({ networks }: IDownUpStatusProps) => {
                   theme.palette.companyExtra.light
                 )}
               >
-                123
+                {upload}
               </Typography>
               <Typography
                 align="center"

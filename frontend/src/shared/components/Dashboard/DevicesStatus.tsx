@@ -1,12 +1,12 @@
 import { Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 
 interface IDeviceStatusProps {
-  networks: Array<string>;
+  online: number,
+  offline: number
 }
 
-export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
+export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
   const theme = useTheme();
-  console.log(networks);
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 3}} height={'100%'}>
       <Paper
@@ -54,7 +54,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
                   theme.palette.success.main
                 )}
               >
-                0
+                {online}
               </Typography>
             </Paper>
             <Paper
@@ -85,7 +85,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
                   theme.palette.companyExtra.grey
                 )}
               >
-                0
+                {offline}
               </Typography>
             </Paper>
         </Stack>

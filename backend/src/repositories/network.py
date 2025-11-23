@@ -6,7 +6,8 @@ import src.shared.http_exceptions as http_exceptions
 from bson import ObjectId
 from pymongo import UpdateOne
 from src.database.db import DB
-from src.models.Network import Network, NetworkCollection, NetworkUpdate
+from src.models.Network import (Network, NetworkCollection, NetworkUpdate,
+                                PyObjectId)
 from src.shared.utils import validate_id
 
 
@@ -22,6 +23,14 @@ class NetworkRepository:
     if all(x in filters.keys() for x in ['network_type', 'location', 'organizationId', 'createdAt', 'updatedAt']):
       raise http_exceptions.INVALID_FIELD(field=f'campo de filtro de redes')
     networks = await db.networks_collection.find(filters).to_list(1000)
+    return NetworkCollection(networks=networks)
+
+  @classmethod
+  async def list_networks_by_ids(cls, db: DB, ids: List[PyObjectId]):
+    ids = [ObjectId(i) for i in ids]
+    if not ids:
+      raise http_exceptions.INVALID_FIELD(field=f'lista de ids')
+    networks = await db.networks_collection.find({'_id': {'$in': ids}}).to_list(1000)
     return NetworkCollection(networks=networks)
 
   @classmethod

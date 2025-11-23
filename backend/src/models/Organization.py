@@ -4,6 +4,7 @@ from typing import List, Optional
 import pytz
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 from pydantic_core import PydanticCustomError
+from src.models.Network import Network
 from typing_extensions import Annotated
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -22,6 +23,9 @@ class Organization(BaseModel):
     if isinstance(v, str):
       return datetime.fromisoformat(v).astimezone(tzinfo=pytz.timezone('America/Sao_Paulo'))
     return v
+
+class DetailedOrganization(Organization):
+  networks: List[Network]
 
 class OrganizationCollection(BaseModel):
   organizations: List[Organization]

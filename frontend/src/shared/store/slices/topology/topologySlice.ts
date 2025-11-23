@@ -1,5 +1,17 @@
 // store/slices/topologySlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../../store';
+
+export const selectTopologyFor = (orgId: string, networkId: string) =>
+  (state: RootState) => {
+    return state.topology.organizations?.[orgId]?.networks?.[networkId] ?? null;
+  };
+
+export const selectTopologyOrganizations =
+  (state: RootState) => state.topology.organizations;
+
+export const selectTopologyTimestamp =
+  (state: RootState) => state.topology.lastUpdated;
 
 type TopologyState = {
   organizations: Record<string, any>; // organizationId -> { networks: { networkId -> graph } }

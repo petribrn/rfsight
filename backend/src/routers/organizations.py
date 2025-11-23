@@ -2,7 +2,9 @@ import src.configs.constants as constants
 import src.shared.http_exceptions as http_exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.database.db import DB, get_db
-from src.models.Organization import (Organization, OrganizationCollection,
+from src.models.Network import Network
+from src.models.Organization import (DetailedOrganization, Organization,
+                                     OrganizationCollection,
                                      OrganizationUpdate)
 from src.models.User import User
 from src.repositories.network import NetworkRepository
@@ -33,6 +35,37 @@ async def get_organization(organization_id, current_user: User = Depends(get_cur
       raise http_exceptions.DOCUMENT_INEXISTENT(document='organização')
 
     return organization_existent
+  except HTTPException as h:
+    raise h
+  except Exception as e:
+    raise http_exceptions.INTERNAL_ERROR(detail=str(e))
+
+@router.get('/detailed-info/{organization_id}', status_code=status.HTTP_200_OK, response_model=DetailedOrganization, response_model_by_alias=False)
+async def get_org_detailed_info(organization_id, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
+  try:
+    organization_id = validate_id(target_id=organization_id, id_field_name='organization_id')
+
+    org_doc = await OrganizationRepository.get_organization_by(db, field='_id', value=organization_id)
+    if not org_doc:
+      raise http_exceptions.DOCUMENT_INEXISTENT(document='organização')
+
+    org_data = org_doc.model_dump(by_alias=True)
+
+    # No networks? return org without networks
+    if not org_doc.networks or len(org_doc.networks) == 0:
+        org_data["networks"] = []
+        return DetailedOrganization(**org_data)
+
+    # Fetch full network documents by IDs
+    networks_result = await NetworkRepository.list_networks_by_ids(
+      db,
+      ids=org_doc.networks
+    )
+
+    # Replace IDs with full objects
+    org_data["networks"] = networks_result.networks
+
+    return DetailedOrganization(**org_data)
   except HTTPException as h:
     raise h
   except Exception as e:

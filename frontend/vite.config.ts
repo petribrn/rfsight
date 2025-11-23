@@ -20,6 +20,7 @@ export default defineConfig({
       'localhost:6791',
       'https://local.rfsight.com',
       'local.rfsight.com',
+      'ui.rfsight.duckdns.org'
     ],
     strictPort: true,
     port: 6791,

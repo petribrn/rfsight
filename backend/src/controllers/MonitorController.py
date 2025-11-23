@@ -352,7 +352,8 @@ class MonitorController:
         "ip": dev.get("ip"),
         "name": dev.get("name"),
         "interface_macs": dev.get("interface_macs", []),
-        "sys_descr": dev.get("descr")
+        "sys_descr": dev.get("descr"),
+        "type": "adoptedDevice",
       }
 
       # LLDP Neighbors
@@ -369,7 +370,7 @@ class MonitorController:
         target_id = make_safe_id(resolved_ip, resolved_ip)
 
         # ensure target node exists
-        nodes.setdefault(target_id, {"id": target_id})
+        nodes.setdefault(target_id, {"id": target_id, "type": "lldp"})
 
         links.append({
           "source": nid,
@@ -391,7 +392,7 @@ class MonitorController:
 
         node_data.update({
             "id": station_id,
-            "type": "wifi-station"
+            "type": "wifiStation"
         })
 
         nodes.setdefault(station_id, node_data)
@@ -399,7 +400,8 @@ class MonitorController:
         links.append({
             "source": nid,
             "target": station_id,
-            "type": "wifi-station",
+            "type": "wifiStation",
+            "animated": True,
         })
 
     return {"nodes": list(nodes.values()), "links": links}
@@ -407,7 +409,7 @@ class MonitorController:
   @staticmethod
   def __enrich_graph_with_nmap(graph, arp_mac, mapping):
     for node in graph["nodes"]:
-      if node.get("type") == "wifi-station":
+      if node.get("type") == "wifiStation":
         mac = node.get("mac")
         if mac:
           mac_norm = mac.upper()

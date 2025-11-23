@@ -14,7 +14,7 @@ export enum ApiRoutes {
   Configurations = '/configurations',
 }
 
-const host = location.hostname;
+const host = 'backend.rfsight.duckdns.org';
 
-export const backendUrl = `https://${host}/backend`;
-export const websocketUrl = `https://${host}/backend/monitor/ws`
+export const backendUrl = `https://${host}`;
+export const websocketUrl = `https://${host}/monitor/ws`

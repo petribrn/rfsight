@@ -1,14 +1,13 @@
 import { Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 
-interface IConnectedCPEsStatusProps {
-  networks: Array<string>;
+interface IProps {
+  stations: number
 }
 
-export const ConnectedCPEsStatus = ({
-  networks,
-}: IConnectedCPEsStatusProps) => {
+export const ConnectedStationsStatus = ({
+  stations,
+}: IProps) => {
   const theme = useTheme();
-  console.log(networks);
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 2}} height={'100%'}>
       <Paper
@@ -25,7 +24,7 @@ export const ConnectedCPEsStatus = ({
         elevation={2}
       >
         <Typography align="center" mb="1rem">
-          CPEs
+          Estações
         </Typography>
         <Stack width={'100%'} justifyContent={'center'} alignItems={'center'} direction={'row'} spacing={1} display={'flex'} useFlexGap>
           <Paper
@@ -56,7 +55,7 @@ export const ConnectedCPEsStatus = ({
                   theme.palette.success.main
                 )}
               >
-                0
+                {stations}
               </Typography>
             </Paper>
         </Stack>

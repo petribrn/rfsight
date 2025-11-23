@@ -1,8 +1,19 @@
+import { NetworkData } from "../types";
+
 export interface IOrganization {
   id: string;
   name: string;
   users: Array<string>;
   networks: Array<string>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IDetailedOrganization {
+  id: string;
+  name: string;
+  users: Array<string>;
+  networks: Array<NetworkData>;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -357,7 +357,7 @@ export const ProfileDialog = ({
         </Box>
         <Box display="flex" flexDirection="column" mt={2}>
           <TextField
-            label="IIndice OID (opcional)"
+            label="Índice OID (opcional)"
             size='small'
             fullWidth
             sx={{ mt: 1 }}
@@ -421,7 +421,7 @@ export const ProfileDialog = ({
             <Box display="flex" flexDirection="column" width={'40%'}>
               <TextField
                 size="small"
-                label="Indice OID"
+                label="Índice OID"
                 value={fieldMapKey}
                 onChange={(e) => handleFieldChange(
                   e.target.value, FieldMapKeySchema, setFieldMapKey, setFieldMapKeyErr

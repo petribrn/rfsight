@@ -175,95 +175,90 @@ async def execute_device_action_sequence(
       up to that point are returned.
     """
     try:
-        # 1. Check permissions
-        if current_user.permission not in (constants.USER_PERMISSIONS['guest_admin'],
-                                           constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
-            raise http_exceptions.NO_PERMISSION
+      if current_user.permission not in (constants.USER_PERMISSIONS['guest_admin'],
+                                          constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
+        raise http_exceptions.NO_PERMISSION
 
-        # 2. Get Device
-        device_id_obj = validate_id(target_id=device_id, id_field_name='device_id')
-        existent_device = await DeviceRepository.get_device_by(db, field='_id', value=device_id_obj)
-        if not existent_device:
-            raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
+      device_id_obj = validate_id(target_id=device_id, id_field_name='device_id')
+      existent_device = await DeviceRepository.get_device_by(db, field='_id', value=device_id_obj)
+      if not existent_device:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
 
-        # 3. Get Profile
-        if not existent_device.profileId:
-            raise http_exceptions.DOCUMENT_INEXISTENT("Dispositivo não possui profile associado.")
+      if not existent_device.profileId:
+        raise http_exceptions.DOCUMENT_INEXISTENT("Dispositivo não possui profile associado.")
 
-        profile = await ProfileRepository.get_profile_by(db, "_id", existent_device.profileId)
-        if not profile:
-            raise http_exceptions.DOCUMENT_INEXISTENT("Profile não encontrado.")
+      profile = await ProfileRepository.get_profile_by(db, "_id", existent_device.profileId)
+      if not profile:
+        raise http_exceptions.DOCUMENT_INEXISTENT("Profile não encontrado.")
 
-        # 4. Instantiate ONE driver to share the session for all actions
-        driver = DeviceDriver(device=existent_device, profile=profile)
+      driver = DeviceDriver(device=existent_device, profile=profile)
 
-        results: List[ActionSequenceResponse] = []
+      results: List[ActionSequenceResponse] = []
 
-        # 5. --- SEQUENTIAL EXECUTION LOOP ---
-        for action_payload in sequence.actions:
-            action_name = action_payload.action_name
-            payload = action_payload.payload
+      for action_payload in sequence.actions:
+        action_name = action_payload.action_name
+        payload = action_payload.payload
 
-            action_to_run = profile.actions.get(action_name)
+        action_to_run = profile.actions.get(action_name)
 
-            # 5a. Validate the action
-            if not action_to_run:
-                results.append(ActionSequenceResponse(
-                    action=action_name,
-                    status='failed',
-                    message=f"Ação '{action_name}' não encontrada no profile."
-                ))
-                break # Stop sequence
+        if not action_to_run:
+          results.append(ActionSequenceResponse(
+            action=action_name,
+            status='failed',
+            message=f"Ação '{action_name}' não encontrada no profile."
+          ))
+          break
 
-            if action_to_run.actionType != 'manage':
-                results.append(ActionSequenceResponse(
-                    action=action_name,
-                    status='failed',
-                    message=f"Ação '{action_name}' não é do tipo 'manage'."
-                ))
-                break # Stop sequence
+        if action_to_run.actionType != 'manage':
+          results.append(ActionSequenceResponse(
+            action=action_name,
+            status='failed',
+            message=f"Ação '{action_name}' não é do tipo 'manage'."
+          ))
+          break
 
-            # 5b. Execute the action in a thread (since driver is sync)
-            try:
-                print(f"Executing action '{action_name}' for device {existent_device.ip_address}...")
+        try:
+          print(f"Executing action '{action_name}' for device {existent_device.ip_address}...")
 
-                # driver.execute_action will auto-auth on the first call
-                # and reuse the session for all subsequent calls in this loop.
-                result = await asyncio.to_thread(
-                    driver.execute_action,
-                    action_name,
-                    payload
-                )
+          result = await asyncio.to_thread(
+            driver.execute_action,
+            action_name,
+            payload
+          )
 
-                # Append success result
-                results.append(ActionSequenceResponse(
-                    action=action_name,
-                    status='success',
-                    message=f"Ação '{action_name}' executada com sucesso.",
-                    data=result
-                ))
+          results.append(ActionSequenceResponse(
+            action=action_name,
+            status='success',
+            message=f"Ação '{action_name}' executada com sucesso.",
+            data=result
+          ))
 
-            except (http_exceptions.DEVICE_LOGIN_FAIL, http_exceptions.DEVICE_API_FAIL, Exception) as e:
-                # 5c. If action fails, log it, append failure, and STOP
-                print(f"Action '{action_name}' failed: {e}")
-                results.append(ActionSequenceResponse(
-                    action=action_name,
-                    status='failed',
-                    message=str(e)
-                ))
-                break # <-- Stop on failure
+        except HTTPException as httpex:
+          print(f"Action '{action_name}' failed: {httpex.detail}")
+          results.append(ActionSequenceResponse(
+            action=action_name,
+            status='failed',
+            message=str(httpex.detail)
+          ))
+          break
+        except Exception as e:
+          print(f"Action '{action_name}' failed: {e}")
+          results.append(ActionSequenceResponse(
+            action=action_name,
+            status='failed',
+            message=str(e)
+          ))
+          break
 
-        # 6. Return the list of all attempted action results
-        return results
+      return results
 
     except HTTPException as h:
-      raise h # Re-raise known HTTP exceptions
+      raise h
     except Exception as e:
-      # Catch setup errors (e.g., device not found, profile not found)
       return [ActionSequenceResponse(
-          action="setup",
-          status="failed",
-          message=f"Erro ao preparar execução: {e}"
+        action="setup",
+        status="failed",
+        message=f"Erro ao preparar execução: {e}"
       )]
 
 @router.get('/{device_id}/config', status_code=status.HTTP_200_OK)

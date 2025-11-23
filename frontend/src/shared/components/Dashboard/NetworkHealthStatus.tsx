@@ -2,17 +2,16 @@ import { Box, Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 import { Gauge, gaugeClasses } from '@mui/x-charts';
 import { useEffect, useState } from 'react';
 
-interface INetworkHealthStatusProps {
-  networks: Array<string>;
+interface IProps {
+  health: number
 }
 
 export const NetworkHealthStatus = ({
-  networks,
-}: INetworkHealthStatusProps) => {
+  health,
+}: IProps) => {
   const theme = useTheme();
-  console.log(networks);
 
-  const [netHealth, setNetHealth] = useState(60);
+  const [netHealth, setNetHealth] = useState(0);
   const maxHealth = 100;
   const getArcColor = (healthPercent: number) => {
     if (healthPercent < 30) {
@@ -24,12 +23,12 @@ export const NetworkHealthStatus = ({
     if (healthPercent < 75) {
       return 'yellow';
     }
-    return theme.palette.primary.main;
+    return theme.palette.success.main;
   };
 
   useEffect(() => {
-    setNetHealth(60);
-  }, []);
+    setNetHealth(health)
+  }, [health])
 
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 2}} height={'100%'}>

@@ -21,7 +21,7 @@ async def profiles(current_user: User = Depends(get_current_user), db: DB = Depe
   except Exception as error:
     raise http_exceptions.INTERNAL_ERROR(detail=str(error))
 
-@router.get('/id/{profile_id}', status_code=status.HTTP_200_OK)
+@router.get('/{profile_id}', status_code=status.HTTP_200_OK)
 async def get_profile(profile_id: str, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
     profile_id = validate_id(target_id=profile_id, id_field_name='profile_id')

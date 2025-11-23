@@ -1,4 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
   Backdrop,
@@ -7,6 +9,7 @@ import {
   CircularProgress,
   Grid,
   Paper,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
@@ -44,6 +47,28 @@ export const DevicesPage = () => {
 
   const DeviceListColumns: GridColDef<DeviceRow>[] = [
     { field: 'id', headerName: 'ID' },
+    {
+      field: 'online',
+      headerName: 'Status',
+      flex: 0.4,
+      renderCell: (params) => (params.row.online ? (
+        <Tooltip title="ONLINE" sx={{
+          height: '100%',
+          alignItems: 'center'
+        }}>
+          <RadioButtonCheckedIcon color='success'/>
+        </Tooltip>
+      ):(
+        <Tooltip title="OFFLINE" sx={{
+          height: '100%',
+          alignItems: 'center'
+        }}>
+          <RadioButtonUncheckedIcon color='error'/>
+        </Tooltip>
+      )
+
+      )
+    },
     {
       field: 'name',
       headerName: 'Nome',
@@ -86,12 +111,6 @@ export const DevicesPage = () => {
       field: 'location',
       headerName: 'Localização',
       flex: 0.4,
-    },
-    {
-      field: 'online',
-      headerName: 'Status',
-      flex: 0.4,
-      valueFormatter: (value) => (value ? 'ONLINE' : 'OFFLINE'),
     },
     {
       field: 'adoptionDate',

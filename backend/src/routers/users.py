@@ -59,10 +59,10 @@ async def get_user_org(user_id: str, current_user: User = Depends(get_current_us
     if not user_existent:
       raise http_exceptions.DOCUMENT_INEXISTENT(document='usuário')
 
-    if not user_existent['organizationId']:
+    if not user_existent.organizationId:
       raise http_exceptions.DOCUMENT_INEXISTENT('organização do usuário')
 
-    user_organization = await OrganizationRepository.get_organization_by(db, field='_id', value=user_existent['organizationId'])
+    user_organization = await OrganizationRepository.get_organization_by(db, field='_id', value=user_existent.organizationId)
     if not user_organization:
       raise http_exceptions.DOCUMENT_INEXISTENT('organização do usuário')
 
