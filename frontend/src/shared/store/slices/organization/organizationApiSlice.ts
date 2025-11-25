@@ -97,13 +97,27 @@ export const orgApiSlice = apiSlice.injectEndpoints({
       query: (orgUpdatePayload) => {
         return {
           url: `${ApiRoutes.Organizations}/${orgUpdatePayload.organizationId}/edit`,
-          method: 'POST',
+          method: 'PATCH',
           credentials: 'include',
           body: {
             name: orgUpdatePayload.name,
           },
         };
       },
+      invalidatesTags: ['Organization'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    removeOrganization: builder.mutation<DefaultResponse, string>({
+      query: (organizationId) => {
+        return {
+          url: `${ApiRoutes.Organizations}/${organizationId}/delete`,
+          method: 'DELETE',
+          credentials: 'include',
+        };
+      },
+      invalidatesTags: ['Organization'],
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },
@@ -118,5 +132,6 @@ export const {
   useGetAllOrganizationsQuery,
   useCreateNewOrganizationMutation,
   useGetOrganizationByIdQuery,
-  useGetUserOrganizationPostAuthMutation
+  useGetUserOrganizationPostAuthMutation,
+  useRemoveOrganizationMutation
 } = orgApiSlice;

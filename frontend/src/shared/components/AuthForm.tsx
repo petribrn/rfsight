@@ -52,7 +52,7 @@ export const AuthForm = () => {
     try {
       // Send login payload and get token
       const loginResponse = await login({
-        username: user.toLowerCase(),
+        username: user,
         password: passwd,
       }).unwrap();
       dispatch(

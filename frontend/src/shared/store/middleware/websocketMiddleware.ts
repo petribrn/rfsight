@@ -111,7 +111,7 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
           }
           case 'topology': {
             const orgs = (msg as WebsocketTopologyMessage).data.organizations ?? {};
-            store.dispatch(topologyActions.setOrganizations(orgs));
+            store.dispatch(topologyActions.mergeTopology(orgs));
             break;
           }
           default:

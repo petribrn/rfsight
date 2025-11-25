@@ -123,7 +123,7 @@ export const Header = () => {
                   <Typography variant="body2">{`Olá, @${currentUsername}.`}</Typography>
                 </MenuItem>
                 <Divider />
-                <MenuItem>
+                <MenuItem onClick={() => navigate(`/users/${currentUsername}`)}>
                   <Typography variant="body2">Minha conta</Typography>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>

@@ -4,6 +4,8 @@ export interface IRegisterUserPayload {
   username: string;
   email: string;
   firstName: string;
+  permission?: number;
+  organizationId: string;
   lastName: string;
   password: string;
 }

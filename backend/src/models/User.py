@@ -164,5 +164,20 @@ class UserUpdate(BaseModel):
           {'networkId': value},
         )
 
+class OrganizationInfo(BaseModel):
+  organizationId: str
+  name: str
+
+class UserRow(BaseModel):
+  id: PyObjectId = Field(alias="_id", default=None)
+  username: str
+  email: str
+  firstName: str
+  lastName: str
+  permission: int
+  organizationInfo: Optional[OrganizationInfo] = None
+  createdAt: datetime
+  updatedAt: datetime
+
 class UserCollection(BaseModel):
   users: List[User]

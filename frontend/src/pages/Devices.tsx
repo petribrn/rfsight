@@ -4,13 +4,14 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
   Backdrop,
+  Box,
   Breadcrumbs,
   Button,
   CircularProgress,
   Grid,
   Paper,
   Tooltip,
-  Typography,
+  Typography
 } from '@mui/material';
 import { GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import { useState } from 'react';
@@ -192,12 +193,15 @@ export const DevicesPage = () => {
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>
-              {!isLoadingProfiles && profiles && (
+              {!isLoadingProfiles && profiles ? (
                 <DeviceList
                   organizationId={userInfo.organizationId}
                   columns={DeviceListColumns}
                 />
-              )}
+              ) : (<Box display={'flex'} height={'100%'} width={'100%'} justifyContent={'center'} alignItems={'center'}>
+                  <Typography mr={1}>Carregando dispositivos...</Typography>
+                  <CircularProgress color="primary" size={'1rem'} />
+                </Box>)}
               <Button
                 variant="contained"
                 sx={{

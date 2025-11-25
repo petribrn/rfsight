@@ -1,8 +1,10 @@
 import { Alert, Box, CircularProgress, Grid, Typography, useTheme } from "@mui/material"
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
-import { useAppSelector, useNetworkMetrics } from "../../hooks"
+import { useAppDispatch, useAppSelector, useNetworkMetrics } from "../../hooks"
 import { selectMergedTopology } from "../../store/selectors/topologySelectors"
+import { useGetDeviceCollectionByOrganizationQuery } from "../../store/slices/device/deviceApiSlice"
+import { topologyActions } from "../../store/slices/topology/topologySlice"
 import { NetworkData } from "../../ts/types"
 import { DashboardAccordion } from "../DashboardAccordion"
 import { TopologyViewer } from "../TopologyViewer"
@@ -18,9 +20,20 @@ interface IProps {
 
 export const NetworkGraphWrapper = ({ organizationId, network }: IProps) => {
   const networkMetrics = useNetworkMetrics(organizationId, network.id);
-  // const graph = useAppSelector(selectTopologyFor(organizationId, network.id));
+  const dispatch = useAppDispatch();
+  const { data: deviceCollection, isLoading: devicesLoading } = useGetDeviceCollectionByOrganizationQuery({organizationId, networkId: network.id});
   const graph = useAppSelector(selectMergedTopology(organizationId, network.id));
   const theme = useTheme();
+
+  useEffect(() => {
+    if (deviceCollection && deviceCollection.devices) {
+      dispatch(topologyActions.setInitialNetworkDevices({
+        orgId: organizationId,
+        networkId: network.id,
+        devices: deviceCollection.devices
+      }));
+    }
+  }, [dispatch, deviceCollection, organizationId, network.id]);
 
   let isLoading = !networkMetrics || !graph;
 
@@ -45,7 +58,7 @@ export const NetworkGraphWrapper = ({ organizationId, network }: IProps) => {
         id="general-info"
         title="Topologia da rede"
       >
-        {!isLoading && <Box display={'flex'} height={'40vh'} width={'100%'} mb={2}>
+        {!devicesLoading && !isLoading && <Box display={'flex'} height={'40vh'} width={'100%'} mb={2}>
           <TopologyViewer graph={graph}></TopologyViewer>
         </Box>}
         {isLoading && <Box display={'flex'} height={'100%'} width={'100%'} justifyContent={'center'} alignItems={'center'}>

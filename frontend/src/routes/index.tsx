@@ -1,4 +1,3 @@
-import { Typography } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   DashboardPage,
@@ -6,11 +5,14 @@ import {
   DevicesPage,
   ForgotPasswordPage,
   NetworksPage,
+  OrganizationsPage,
   ProfilesPage,
   RegisterPage,
   ResetPasswordPage,
+  UsersPage,
 } from '../pages';
 import { AuthPage } from '../pages/Auth';
+import { MyAccountPage } from '../pages/MyAccount';
 import {
   PageWithSideMenu,
   PersistLogin,
@@ -54,12 +56,6 @@ export default function AppRoutes() {
             element={<PageWithSideMenu pageContent={<NetworksPage />} />}
           />
           <Route
-            path="/configure"
-            element={
-              <PageWithSideMenu pageContent={<Typography>Configure</Typography>} />
-            }
-          />
-          <Route
             path="/devices"
             element={<PageWithSideMenu pageContent={<DevicesPage />} />}
           />
@@ -74,14 +70,14 @@ export default function AppRoutes() {
           <Route
             path="/users"
             element={
-              <PageWithSideMenu pageContent={<Typography>Users</Typography>} />
+              <PageWithSideMenu pageContent={<UsersPage />} />
             }
           />
           <Route
             path="/organizations"
             element={
               <PageWithSideMenu
-                pageContent={<Typography>Organizations</Typography>}
+                pageContent={<OrganizationsPage />}
               />
             }
           />
@@ -89,6 +85,12 @@ export default function AppRoutes() {
             path="/devices/:networkId/:deviceId/configure"
             element={
               <PageWithSideMenu pageContent={<DeviceConfigurationPage />} />
+            }
+          />
+          <Route
+            path="/users/:username"
+            element={
+              <PageWithSideMenu pageContent={<MyAccountPage />} />
             }
           />
         </Route>

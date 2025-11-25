@@ -117,7 +117,7 @@ async def edit_organization(organization_id: str, new_organization_data: Organiz
     updated_organization = await OrganizationRepository.edit_organization_by_id(db, organization_id=organization_id,
                                                                                 new_organization_data=new_organization_data)
 
-    return {'success': True, 'message': f'Organização {updated_organization.id} atualizada.'}
+    return {'success': True, 'message': 'Organização atualizada.'}
   except HTTPException as h:
     raise h
   except Exception as e:
@@ -144,7 +144,7 @@ async def delete_organization(organization_id: str, current_user: User = Depends
 
     deleted_organization = await OrganizationRepository.delete_organization_by_id(db, organization_id=organization_id)
 
-    return {'success': True, 'message': f'Organização {deleted_organization.id} deletada.'}
+    return {'success': True, 'message': 'Organização deletada.'}
   except HTTPException as h:
     raise h
   except Exception as e:

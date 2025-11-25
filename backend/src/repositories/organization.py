@@ -18,6 +18,15 @@ class OrganizationRepository:
     return OrganizationCollection(organizations=organizations)
 
   @classmethod
+  async def get_organizations_by_ids(cls, db: DB, ids: list[str]):
+    object_ids = [ObjectId(i) for i in ids if ObjectId.is_valid(i)]
+    orgs = await db.organizations_collection.find(
+        { "_id": { "$in": object_ids } }
+    ).to_list(1000)
+
+    return { str(o["_id"]): o for o in orgs }
+
+  @classmethod
   async def get_organization_by(cls, db: DB, field: str, value):
     if field not in ('_id', 'username', 'email'):
       raise http_exceptions.INVALID_FIELD(field=f'campo de filtro {field} de organização')

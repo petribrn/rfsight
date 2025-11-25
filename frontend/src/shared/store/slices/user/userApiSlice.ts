@@ -4,7 +4,7 @@ import {
   IRegisterUserPayload,
   IUpdateUserPayload,
 } from '../../../ts/interfaces';
-import { DefaultResponse, UserInfo } from '../../../ts/types';
+import { DefaultResponse, UserInfo, UserRow } from '../../../ts/types';
 import { apiSlice } from '../api/apiSlice';
 
 export const userApiSlice = apiSlice.injectEndpoints({
@@ -15,6 +15,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: newUserInfo,
       }),
+      invalidatesTags: ['User'],
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },
@@ -50,6 +51,28 @@ export const userApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
+    getAllUsers: builder.query<Array<UserRow>, void>({
+      query: () => ({
+        url: `${ApiRoutes.Users}`,
+        method: 'GET',
+        credentials: 'include',
+      }),
+      providesTags: ['User'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    removeUser: builder.mutation<DefaultResponse, string>({
+      query: (userId) => ({
+        url: `${ApiRoutes.Users}/${userId}/delete`,
+        method: 'DELETE',
+        credentials: 'include',
+      }),
+      invalidatesTags: ['User'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
   }),
 });
 
@@ -57,4 +80,7 @@ export const {
   useRegisterNewUserMutation,
   useGetUserInfoPostAuthMutation,
   useUpdateUserMutation,
+  useGetAllUsersQuery,
+  useGetUserInfoQuery,
+  useRemoveUserMutation
 } = userApiSlice;

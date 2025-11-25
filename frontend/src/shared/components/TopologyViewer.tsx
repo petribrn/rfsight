@@ -86,7 +86,7 @@ export const TopologyViewer = ({ graph }: Props) => {
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
-      <ReactFlowProvider>
+      <ReactFlowProvider fitView>
         <ReactFlow
           nodes={reactflowData!.nodes}
           edges={reactflowData!.edges}

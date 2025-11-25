@@ -30,10 +30,8 @@ export const NetworksPage = () => {
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const userInfo = useAppSelector(selectUserInfo);
   const [networkFromAction, setNetworkFromAction] = useState<NetworkRow>();
-    const [networkDialogOperation, setnetworkDialogOperation] = useState<
-      'create' | 'edit'
-    >('create');
-    const [removeNetwork] = useRemoveNetworkMutation();
+  const [networkDialogOperation, setnetworkDialogOperation] = useState<'create' | 'edit'>('create');
+  const [removeNetwork] = useRemoveNetworkMutation();
 
   const networkListColumns: GridColDef<NetworkRow>[] = [
     { field: 'id', headerName: 'ID' },
@@ -83,7 +81,7 @@ export const NetworksPage = () => {
       disableColumnMenu: true,
       getActions: (params) => [
         <GridActionsCellItem
-          key="configure"
+          key="edit"
           icon={<EditIcon />}
           label="Editar"
           onClick={() => handleEditNetwork(params.row)}
@@ -113,7 +111,7 @@ export const NetworksPage = () => {
     setConfirmationDialogOpen(true);
   };
 
-  const handleDeleteProfile = async () => {
+  const handleDeleteNetwork = async () => {
     handleCloseConfirmation();
     try {
       const removeNetworkResult = await removeNetwork(
@@ -173,7 +171,7 @@ export const NetworksPage = () => {
             <ConfirmationDialog
               open={confirmationDialogOpen}
               handleClose={handleCloseConfirmation}
-              handleConfirm={handleDeleteProfile}
+              handleConfirm={handleDeleteNetwork}
               title="Deseja mesmo remover a rede?"
               content="Ao remover a rede, todos os dispositivos associados serão removidos."
               confirmButtonText="Remover"

@@ -54,6 +54,7 @@ export const OrganizationsSelection = ({
             numberOfUsers: org.users.length,
             numberOfNetworks: org.networks.length,
             createdAt: new Date(org.createdAt),
+            updatedAt: new Date(org.updatedAt),
           }))
         );
       }
@@ -133,8 +134,15 @@ export const OrganizationsSelection = ({
         }}
         slotProps={{
           pagination: {
-            labelDisplayedRows: (paginationInfo) =>
-              `${paginationInfo.from}-${paginationInfo.to} de ${paginationInfo.count}`,
+            labelDisplayedRows: ({
+              from,
+              to,
+              count,
+            }: {
+              from: number;
+              to: number;
+              count: number;
+            }) => `${from}-${to} de ${count}`,
           },
         }}
         pageSizeOptions={[5, 10, 20, 30]}

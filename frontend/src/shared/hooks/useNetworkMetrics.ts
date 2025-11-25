@@ -1,10 +1,11 @@
-import { useSelector } from "react-redux";
+// hooks/useNetworkMetrics.ts (ou em hooks/index.ts se preferir)
+import { useSelector } from 'react-redux';
 import {
   selectAverageLatency,
   selectNetworkHealth,
   selectOnlineOfflineStats,
   selectStationsCount
-} from "../store/selectors/topologySelectors";
+} from '../store/selectors/topologySelectors';
 
 export const useNetworkMetrics = (orgId: string, networkId: string) => {
   const onlineOffline = useSelector(selectOnlineOfflineStats(orgId, networkId));
@@ -13,11 +14,11 @@ export const useNetworkMetrics = (orgId: string, networkId: string) => {
   const health = useSelector(selectNetworkHealth(orgId, networkId));
 
   return {
-    online: onlineOffline.online,
-    offline: onlineOffline.offline,
-    total: onlineOffline.total,
-    stations,
-    avgLatency,
-    health,
+    online: onlineOffline.online ?? 0,
+    offline: onlineOffline.offline ?? 0,
+    total: onlineOffline.total ?? 0,
+    stations: stations ?? 0,
+    avgLatency: avgLatency ?? null,
+    health: health ?? 0,
   };
 };

@@ -10,7 +10,7 @@ export const selectTopologyDeviceIds = (orgId: string, networkId: string) =>
     const graph = state.topology.organizations?.[orgId]?.networks?.[networkId];
     if (!graph?.nodes) return [];
     return graph.nodes
-      .filter((n: any) => n.type === "adoptedDevice" || n.type === "device")
+      .filter((n: any) => n.type === "adoptedDevice")
       .map((n: any) => n.id);
   };
 
@@ -99,6 +99,7 @@ export const selectMergedTopology = (orgId: string, networkId: string) =>
           const mon = monitorMap[node.id];
           return {
             ...node,
+            uptime: mon?.stats?.uptime ?? null,
             online: mon?.online ?? false,
             latency: mon?.latency ?? null,
           };
