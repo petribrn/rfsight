@@ -1,4 +1,3 @@
-// store/middleware/websocketMiddleware.ts
 import { Dispatch, Middleware, MiddlewareAPI } from '@reduxjs/toolkit';
 import { WebsocketMessage, WebsocketMonitorMessage, WebsocketTopologyMessage } from '../../ts/types';
 import { DeviceMonitorEntity, monitorActions } from '../slices/monitor/monitorSlice';
@@ -8,7 +7,6 @@ import { RootState } from '../store';
 
 const WS_BASE = (url: string, token: string | null) => {
   if (!token) return url;
-  // token as query param (browser-safe)
   const sep = url.includes('?') ? '&' : '?';
   return `${url}${sep}token=${token}`;
 };
@@ -24,13 +22,12 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
       if (ws.readyState === WebSocket.OPEN) {
         try { ws.send(JSON.stringify({ messageType: 'ping' })); } catch {}
       }
-    }, 25000); // 25s
+    }, 25000);
   };
 
   return (store: MiddlewareAPI<Dispatch, RootState>) => (next) => (action) => {
     const state = store.getState();
 
-    // connect action: open socket using token from auth slice
     if (action.type === 'websocket/connect') {
       const token = state.auth.token;
       if (socket && socket.readyState === WebSocket.OPEN) return next(action);
@@ -53,12 +50,10 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
 
         console.log(msg);
 
-        // route by messageType
         switch (msg.messageType) {
           case 'deviceMonitor': {
             const orgs = (msg as WebsocketMonitorMessage).data.organizations ?? {};
 
-            // Flatten into device list for the monitor slice
             const flattened: DeviceMonitorEntity[] = [];
 
             for (const [orgId, orgData] of Object.entries(orgs)) {
@@ -71,7 +66,7 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
                   if (!dev) continue;
 
                   flattened.push({
-                    id: deviceId, // entity adapter uses id field
+                    id: deviceId,
                     online: dev.online,
                     latency: dev.latency,
                     actionsStatuses: dev.actionsStatuses,
@@ -79,7 +74,6 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
                     timestamp: dev.timestamp
                   });
 
-                  // push time series for numeric stats
                   if (dev.stats) {
                     const ts = dev.timestamp ?? new Date().toISOString();
                     Object.entries(dev.stats).forEach(([metric, v]) => {
@@ -92,7 +86,6 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
                       }
                     });
 
-                    // explicit latency
                     if (typeof dev.latency === 'number') {
                       store.dispatch(timeseriesActions.pushPoint({
                         deviceId,
@@ -105,7 +98,6 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
               }
             }
 
-            // normalize devices into Redux
             store.dispatch(monitorActions.bulkUpsertDevices(flattened));
             break;
           }
@@ -122,7 +114,7 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
       socket.onclose = () => {
         store.dispatch({ type: 'websocket/closed' });
         if (heartbeatTimer) { window.clearInterval(heartbeatTimer); heartbeatTimer = null; }
-        // try reconnect after backoff
+
         if (reconnectTimer) window.clearTimeout(reconnectTimer);
         reconnectTimer = window.setTimeout(() => {
           store.dispatch({ type: 'websocket/connect' });
@@ -136,7 +128,6 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
       return next(action);
     }
 
-    // disconnect action
     if (action.type === 'websocket/disconnect') {
       if (socket) {
         try { socket.close(); } catch {}
@@ -147,7 +138,6 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
       return next(action);
     }
 
-    // allow other actions
     return next(action);
   };
 };

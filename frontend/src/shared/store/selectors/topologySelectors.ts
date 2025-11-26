@@ -82,6 +82,9 @@ export const selectNetworkHealth = (orgId: string, networkId: string) =>
     return Math.round(health * 100);
   };
 
+// -------------------------------------------
+// Topologia com dados de monitoramento
+// -------------------------------------------
 export const selectMergedTopology = (orgId: string, networkId: string) =>
   createSelector(
     [

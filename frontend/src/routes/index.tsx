@@ -12,7 +12,7 @@ import {
   UsersPage,
 } from '../pages';
 import { AuthPage } from '../pages/Auth';
-import { MyAccountPage } from '../pages/MyAccount';
+import { ManageUserPage } from '../pages/ManageUser';
 import {
   PageWithSideMenu,
   PersistLogin,
@@ -90,7 +90,7 @@ export default function AppRoutes() {
           <Route
             path="/users/:username"
             element={
-              <PageWithSideMenu pageContent={<MyAccountPage />} />
+              <PageWithSideMenu pageContent={<ManageUserPage />} />
             }
           />
         </Route>

@@ -40,21 +40,32 @@ export const networkApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
-    getNetworksCollectionByOrg: builder.query<NetworkCollection, string | null>(
-      {
-        query: (organizationId) => {
-          return {
-            url: `${ApiRoutes.Networks}/list?organizationId=${organizationId}`,
-            method: 'GET',
-            credentials: 'include',
-          };
-        },
-        providesTags: ['Network'],
-        transformErrorResponse(baseQueryReturnValue) {
-          return normalizeApiError(baseQueryReturnValue);
-        },
-      }
-    ),
+    getFullNetworksCollection: builder.query<NetworkCollection, void>({
+      query: () => {
+        return {
+          url: `${ApiRoutes.Networks}`,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Network'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    getNetworksCollectionByOrg: builder.query<NetworkCollection, string | null>({
+      query: (organizationId) => {
+        return {
+          url: `${ApiRoutes.Networks}/list?organizationId=${organizationId}`,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Network'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
     getNetworkById: builder.query<NetworkData, string>({
       query: (networkId) => {
         return {
@@ -90,4 +101,5 @@ export const {
   useGetNetworkByIdQuery,
   useEditNetworkByIdMutation,
   useRemoveNetworkMutation,
+  useGetFullNetworksCollectionQuery,
 } = networkApiSlice;

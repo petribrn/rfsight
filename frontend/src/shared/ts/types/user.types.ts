@@ -10,6 +10,15 @@ export type UserInfo = {
   updatedAt: Date;
 };
 
+export type UserFormInfo = {
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  permission: number;
+  organizationId: string;
+}
+
 export type UserRow = {
   id: string;
   username: string;

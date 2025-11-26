@@ -26,6 +26,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: updateUserPayload.updateUserData,
       }),
+      invalidatesTags: ['User'],
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },

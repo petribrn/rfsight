@@ -67,7 +67,7 @@ export const ConnectedCPEsChart = () => {
   const series = [
     {
       name: 'connected-cpes',
-      color: theme.palette.companyExtra.main,
+      color: theme.palette.graphs.main,
       data: [],
     },
   ];

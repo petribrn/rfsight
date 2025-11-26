@@ -35,6 +35,8 @@ export type DeviceRow = {
   network: string;
   profile: string;
   online: boolean;
+  latency?: number | string;
+  uptime?: number | string;
   adoptionDate: Date;
   updatedAt: Date;
 };

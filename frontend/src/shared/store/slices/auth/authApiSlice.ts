@@ -5,7 +5,10 @@ import {
   IForgotPasswdPayload,
   ILoginPayload,
   IRefreshResponse,
+  IResetPasswdAdminPayload,
   IResetPasswdPayload,
+  IValidatePasswordPayload,
+  IValidatePasswordResponse,
 } from '../../../ts/interfaces';
 import { DefaultResponse } from '../../../ts/types';
 import { apiSlice } from '../api/apiSlice';
@@ -57,6 +60,26 @@ export const authApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
+    validatePassword: builder.mutation<IValidatePasswordResponse, IValidatePasswordPayload>({
+      query: (payload) => ({
+        url: '/auth/validate-password',
+        method: 'POST',
+        body: payload
+      }),
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    resetPasswordAdmin: builder.mutation<DefaultResponse, IResetPasswdAdminPayload>({
+      query: (payload) => ({
+        url: '/auth/reset-password-admin',
+        method: 'POST',
+        body: payload
+      }),
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
     logout: builder.mutation<DefaultResponse, void>({
       query: () => ({
         url: ApiRoutes.Logout,
@@ -76,4 +99,6 @@ export const {
   useLogoutMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useResetPasswordAdminMutation,
+  useValidatePasswordMutation
 } = authApiSlice;

@@ -4,7 +4,6 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
   Backdrop,
-  Box,
   Breadcrumbs,
   Button,
   CircularProgress,
@@ -25,8 +24,10 @@ import {
 import { BreadcrumbLink } from '../shared/components/BreadcrumbLink';
 import { useAppSelector } from '../shared/hooks';
 import { useRemoveDeviceMutation } from '../shared/store/slices/device/deviceApiSlice';
+import { useGetFullNetworksCollectionQuery } from '../shared/store/slices/network/networkApiSlice';
 import { useGetProfilesCollectionQuery } from '../shared/store/slices/profile/profileApiSlice';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { formatLatency, formatUptime } from '../shared/ts/helpers';
 import { DefaultApiError } from '../shared/ts/interfaces';
 import { DeviceRow } from '../shared/ts/types';
 
@@ -39,6 +40,7 @@ export const DevicesPage = () => {
   const navigate = useNavigate();
   const { data: profiles, isLoading: isLoadingProfiles } =
     useGetProfilesCollectionQuery();
+  const {data: networks, isLoading: isLoadingNetworks} = useGetFullNetworksCollectionQuery();
 
   const getProfileName = (profileId: string) => {
     return profiles ? profiles.profiles
@@ -46,12 +48,18 @@ export const DevicesPage = () => {
       .map((profile) => profile.name)[0] : '';
   };
 
+  const getNetworkName = (networkId: string) => {
+    return networks ? networks.networks
+      .filter((net) => net.id === networkId)
+      .map((net) => net.name)[0] : '';
+  };
+
   const DeviceListColumns: GridColDef<DeviceRow>[] = [
     { field: 'id', headerName: 'ID' },
     {
       field: 'online',
       headerName: 'Status',
-      flex: 0.4,
+      flex: 0.3,
       renderCell: (params) => (params.row.online ? (
         <Tooltip title="ONLINE" sx={{
           height: '100%',
@@ -69,6 +77,18 @@ export const DevicesPage = () => {
       )
 
       )
+    },
+    {
+      field: 'uptime',
+      headerName: 'Uptime',
+      flex: 0.4,
+      valueFormatter: (value) => formatUptime(value),
+    },
+    {
+      field: 'latency',
+      headerName: 'Latência',
+      flex: 0.4,
+      valueFormatter: (value) => formatLatency(value),
     },
     {
       field: 'name',
@@ -93,20 +113,21 @@ export const DevicesPage = () => {
       flex: 0.4,
     },
     {
-      field: 'fw_version',
-      headerName: 'Versão de firmware',
-      flex: 0.4,
-    },
-    {
       field: 'network',
       headerName: 'Rede',
       flex: 0.4,
+      valueFormatter: (value) => getNetworkName(value),
     },
     {
       field: 'profile',
       headerName: 'Profile',
       flex: 0.4,
       valueFormatter: (value) => getProfileName(value),
+    },
+    {
+      field: 'fw_version',
+      headerName: 'Versão de firmware',
+      flex: 0.4,
     },
     {
       field: 'location',
@@ -135,6 +156,7 @@ export const DevicesPage = () => {
           icon={<SettingsIcon />}
           label="Configurar"
           onClick={() => handleConfigure(params.row)}
+          disabled={!params.row.online}
         />,
         <GridActionsCellItem
           key="delete"
@@ -193,15 +215,12 @@ export const DevicesPage = () => {
         {userInfo ? (
           <>
             <Paper sx={{ p: 3 }}>
-              {!isLoadingProfiles && profiles ? (
-                <DeviceList
-                  organizationId={userInfo.organizationId}
-                  columns={DeviceListColumns}
-                />
-              ) : (<Box display={'flex'} height={'100%'} width={'100%'} justifyContent={'center'} alignItems={'center'}>
-                  <Typography mr={1}>Carregando dispositivos...</Typography>
-                  <CircularProgress color="primary" size={'1rem'} />
-                </Box>)}
+              <DeviceList
+                organizationId={userInfo.organizationId}
+                columns={DeviceListColumns}
+                loadingNetworks={isLoadingNetworks}
+                loadingProfiles={isLoadingProfiles}
+              />
               <Button
                 variant="contained"
                 sx={{

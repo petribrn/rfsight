@@ -22,7 +22,6 @@
     "@reduxjs/toolkit": "^2.10.1",
     "@xyflow/react": "^12.9.3",
     "apexcharts": "^5.3.6",
-    "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "dagre": "^0.8.5",
     "joi": "^18.0.1",

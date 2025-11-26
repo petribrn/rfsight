@@ -27,11 +27,9 @@ export const DeviceConfigurationPage = () => {
   const { networkId, deviceId } = useParams();
   const currentOrg = useAppSelector(selectCurrentOrg);
 
-  // 1. Get Device data
   const { data: device, isLoading: isLoadingDevice } =
     useGetDeviceByIdQuery(deviceId!);
 
-  // 2. Get Profile data (skip if device isn't loaded yet)
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileByIdQuery(
     device?.profileId!,
     {
@@ -39,7 +37,6 @@ export const DeviceConfigurationPage = () => {
     }
   );
 
-  // 3. State for Tabs
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -49,7 +46,6 @@ export const DeviceConfigurationPage = () => {
 
   const organizationId = network?.organizationId
 
-  // Loading state
   if (isLoadingDevice || isLoadingProfile || isLoadingNetwork || !device || !profile) {
     return (
       <PageGridCenteredContainer>
@@ -74,8 +70,8 @@ export const DeviceConfigurationPage = () => {
       </Grid>
 
       <Grid>
-        <Typography variant='h6' color='text.secondary'>Gerenciar dispositivo</Typography>
-        <Typography variant='caption' color='text.secondary'>Selecione as ações de gerenciamento a serem executadas (ordenadas) e adicione os respectivos payloads.</Typography>
+        <Typography variant='h6'>Gerenciar dispositivo</Typography>
+        <Typography variant='caption'>Selecione as ações de gerenciamento a serem executadas (ordenadamente) e adicione os respectivos payloads.</Typography>
       </Grid>
 
       <Grid>

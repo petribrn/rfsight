@@ -9,7 +9,8 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from pyisemail import is_email
 from src.database.db import DB, get_db
 from src.models.Auth import (ForgetPasswordPayload, RefreshToken,
-                             ResetPasswordPayload, Token)
+                             ResetPasswordAdminPayload, ResetPasswordPayload,
+                             Token, ValidatePasswordPayload)
 from src.models.User import User
 from src.repositories.user import UserRepository
 
@@ -41,6 +42,25 @@ async def login(response: Response, userdetails: OAuth2PasswordRequestForm = Dep
 @router.get('/refresh', status_code=status.HTTP_201_CREATED, response_model=RefreshToken, response_model_by_alias=False)
 async def refresh_auth(response: Response, token_data: Token = Depends(oauth.authorize)):
   return token_data
+
+@router.post('/validate-password', status_code=status.HTTP_200_OK)
+async def validate_current_password(payload: ValidatePasswordPayload, current_user: User = Depends(oauth.get_current_user), db: DB = Depends(get_db)):
+  try:
+    if not payload.userId or not payload.currentPassword:
+      raise http_exceptions.INVALID_FIELD('userId/password')
+
+    user = await UserRepository.get_user_by(db, field='_id', value=payload.userId)
+    if not user:
+      raise http_exceptions.INVALID_CREDENTIALS
+
+    if not utils.verify_passwd(payload.currentPassword, user.password):
+      return { "success": False, "valid": False }
+
+    return { "success": True, "valid": True }
+  except HTTPException as h:
+      raise h
+  except Exception as e:
+      raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"success": False, "message": str(e)})
 
 @router.post('/forgot-password', status_code=status.HTTP_200_OK)
 async def forgot_password(forget_password_payload: ForgetPasswordPayload, request: Request, db: DB = Depends(get_db)):
@@ -79,6 +99,22 @@ async def forgot_password(forget_password_payload: ForgetPasswordPayload, reques
       raise h
   except Exception as e:
       raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"success": False, "message": str(e)})
+
+@router.post('/reset-password-admin', status_code=status.HTTP_200_OK)
+async def reset_password_admin(payload: ResetPasswordAdminPayload, current_user: User = Depends(oauth.get_current_user), db: DB = Depends(get_db)):
+  try:
+    if not payload.userId or not payload.newPassword:
+      raise http_exceptions.INVALID_FIELD('userId/password')
+
+    updated = await UserRepository.update_user_password(db, payload.userId, payload.newPassword)
+    if not updated:
+      raise http_exceptions.PASSWD_UPDATE_FAILED
+
+    return { "success": True, "message": "Senha atualizada com sucesso." }
+  except HTTPException as h:
+    raise h
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"success": False, "message": str(e)})
 
 @router.post('/reset-password', status_code=status.HTTP_201_CREATED)
 async def reset_password(reset_password_payload: ResetPasswordPayload, db: DB = Depends(get_db)):

@@ -44,7 +44,7 @@ export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
                   theme.palette.success.main
                 )}
               >
-                On-line
+                Online
               </Typography>
               <Typography
                 align="center"
@@ -62,7 +62,7 @@ export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
               sx={{
                 padding: { xs: 1 },
                 pb: { xs: 2 },
-                backgroundColor: theme.palette.companyExtra.grey,
+                backgroundColor: theme.palette.graphs.grey,
                 opacity: '75%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -72,7 +72,7 @@ export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
               <Typography
                 align="center"
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.grey
+                  theme.palette.graphs.grey
                 )}
               >
                 Offline
@@ -82,7 +82,7 @@ export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
                 variant="h6"
                 fontWeight={700}
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.grey
+                  theme.palette.graphs.grey
                 )}
               >
                 {offline}

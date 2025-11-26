@@ -43,6 +43,8 @@ export interface IDeviceListProps {
   organizationId: string;
   networkId?: string | null;
   columns: GridColDef<DeviceRow>[];
+  loadingProfiles: boolean;
+  loadingNetworks: boolean;
 }
 
 export interface IDeviceContextMenu {

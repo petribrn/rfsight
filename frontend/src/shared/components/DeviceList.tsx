@@ -15,6 +15,8 @@ export const DeviceList = ({
   organizationId,
   networkId = null,
   columns,
+  loadingNetworks,
+  loadingProfiles
 }: IDeviceListProps) => {
   const { data: deviceCollection, isLoading } =
     useGetDeviceCollectionByOrganizationQuery({
@@ -26,25 +28,36 @@ export const DeviceList = ({
   const [rows, setRows] = useState<Array<DeviceRow>>([]);
 
   useEffect(() => {
-    if (deviceCollection) {
-      setRows(
-        deviceCollection.devices.map((device) => ({
-          id: device.id,
-          name: device.name,
-          model: device.model,
-          mac_address: device.mac_address,
-          fw_version: device.fw_version,
-          ip_address: device.ip_address,
-          network: device.networkId,
-          profile: device.profileId,
-          location: device.location,
-          online: false,
-          adoptionDate: new Date(device.createdAt),
-          updatedAt: new Date(device.updatedAt),
-        }))
-      );
-    }
-  }, [deviceCollection]);
+    if (!deviceCollection) return;
+
+    const mapped = deviceCollection.devices.map((device) => {
+      const ws = monitorData ? monitorData[device.id] : null;
+      const stats = ws?.stats || null;
+
+      const isOnline = ws?.online ?? false;
+
+      return {
+        id: device.id,
+        name: stats?.name || device.name,
+        model: stats?.model || device.model,
+        mac_address: device.mac_address,
+        fw_version: stats?.fw_version || device.fw_version,
+        ip_address: device.ip_address,
+        network: device.networkId,
+        profile: device.profileId,
+        location: stats?.location || device.location,
+        online: isOnline,
+        latency: isOnline ? ws?.latency ?? undefined : undefined,
+        uptime: isOnline ? stats?.uptime ?? 0 : 0,
+        adoptionDate: new Date(device.createdAt),
+        updatedAt: ws?.timestamp
+          ? new Date(ws.timestamp)
+          : new Date(device.updatedAt),
+      };
+    });
+
+    setRows(mapped);
+  }, [deviceCollection, monitorData]);
 
   useEffect(() => {
     if (!monitorData) return;
@@ -54,13 +67,31 @@ export const DeviceList = ({
         const ws = monitorData[row.id];
         if (!ws) return row;
 
+        const isOnline = ws.online ?? false;
+        const stats = ws.stats || null;
+
+        if (!isOnline) {
+          return {
+            ...row,
+            online: false,
+            latency: undefined,
+            updatedAt: ws.timestamp ? new Date(ws.timestamp) : row.updatedAt,
+          };
+        }
+
         return {
           ...row,
-          online: ws.online,
-          latency: ws.latency,
+          online: true,
+
+          name: stats?.name || row.name,
+          model: stats?.model || row.model,
+          fw_version: stats?.fw_version || row.fw_version,
+          location: stats?.location || row.location,
+
+          latency: ws.latency ?? row.latency,
+          uptime: stats?.uptime ?? row.uptime,
+
           updatedAt: ws.timestamp ? new Date(ws.timestamp) : row.updatedAt,
-          // IP might also be in stats (depends on backend)
-          ip_address: row.ip_address,
         };
       })
     );
@@ -83,7 +114,7 @@ export const DeviceList = ({
         disableMultipleRowSelection
         disableColumnMenu
         disableColumnSelector
-        loading={isLoading}
+        loading={isLoading || loadingNetworks || loadingProfiles}
         sx={{
           [`& .${gridClasses.cell}:focus, & .${gridClasses.cell}:focus-within`]:
             {

@@ -7,7 +7,7 @@ type MonitorState = {
 };
 
 export type DeviceMonitorEntity = {
-  id: string; // device id string
+  id: string;
   online: boolean;
   latency?: number;
   stats?: Record<string, any>;

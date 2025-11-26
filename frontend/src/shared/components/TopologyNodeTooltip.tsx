@@ -1,4 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
+import { formatLatency, formatUptime } from '../ts/helpers';
 
 
 interface IProps{
@@ -17,6 +18,9 @@ export const TopologyNodeTooltip = ({ data }: IProps) => {
           if (["label"].includes(key)) return null;
           if (["id"].includes(key)) return null;
           if (value === null || value === undefined || value === '') return null;
+
+          if (["uptime"].includes(key)) value = formatUptime(value as number);
+          if (["latency"].includes(key)) value = formatLatency(value as number);
 
           return (
             <Typography key={key} variant="caption">

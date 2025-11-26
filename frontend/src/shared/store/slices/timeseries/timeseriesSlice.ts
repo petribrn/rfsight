@@ -1,4 +1,3 @@
-// store/slices/timeseriesSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type Point = { ts: string; value: number };

@@ -30,7 +30,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
               variant="outlined"
               sx={{
                 padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
-                backgroundColor: theme.palette.companyExtra.light,
+                backgroundColor: theme.palette.graphs.light,
                 opacity: '75%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -41,7 +41,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                 <Typography
                   align="center"
                   color={theme.palette.getContrastText(
-                    theme.palette.companyExtra.light
+                    theme.palette.graphs.light
                   )}
                 >
                   Download
@@ -51,7 +51,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                   variant="body1"
                   fontWeight={800}
                   color={theme.palette.getContrastText(
-                    theme.palette.companyExtra.light
+                    theme.palette.graphs.light
                   )}
                 >
                   {download}
@@ -60,7 +60,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                   align="center"
                   variant="body1"
                   color={theme.palette.getContrastText(
-                    theme.palette.companyExtra.light
+                    theme.palette.graphs.light
                   )}
                 >
                   Mbps
@@ -71,7 +71,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
               variant="outlined"
               sx={{
                 padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
-                backgroundColor: theme.palette.companyExtra.light,
+                backgroundColor: theme.palette.graphs.light,
                 opacity: '75%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -81,7 +81,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
               <Typography
                 align="center"
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.light
+                  theme.palette.graphs.light
                 )}
               >
                 Upload
@@ -91,7 +91,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                 variant="body1"
                 fontWeight={800}
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.light
+                  theme.palette.graphs.light
                 )}
               >
                 {upload}
@@ -100,7 +100,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                 align="center"
                 variant="body1"
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.light
+                  theme.palette.graphs.light
                 )}
               >
                 Mbps
