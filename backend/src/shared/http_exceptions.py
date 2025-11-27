@@ -45,6 +45,4 @@ DEVICE_TO_ADOPT_NOT_FOUND = custom_HTTPException_factory(status_code=status.HTTP
 
 DEVICE_ALREADY_ADOPTED = custom_HTTPException_factory(status_code=status.HTTP_400_BAD_REQUEST, message='Dispositivo já está adotado.')
 
-CONFIG_ACTION_FAILED = lambda action: custom_HTTPException_factory(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, message=f'Falha ao {action} config do device.')
-
 PASSWD_UPDATE_FAILED = custom_HTTPException_factory(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, message='Falha ao atualizar senha.')

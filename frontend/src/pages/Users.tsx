@@ -6,7 +6,11 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { BreadcrumbLink, ConfirmationDialog, UserCreationDialog, UserList } from "../shared/components";
+import { useAppSelector } from '../shared/hooks';
 import { useRemoveUserMutation } from '../shared/store/slices/user/userApiSlice';
+import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
+import { PermissionLabels } from '../shared/ts/helpers';
 import { DefaultApiError } from '../shared/ts/interfaces';
 import { UserRow } from "../shared/ts/types";
 
@@ -17,6 +21,7 @@ export const UsersPage = () => {
   const [userFromAction, setUserFromAction] = useState<UserRow>();
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [removeUser] = useRemoveUserMutation();
+  const userInfo = useAppSelector(selectUserInfo);
 
   const navigate = useNavigate();
 
@@ -26,7 +31,12 @@ export const UsersPage = () => {
     { field: 'email', headerName: 'E-mail', flex: 1 },
     { field: 'firstName', headerName: 'Nome', flex: 0.6 },
     { field: 'lastName', headerName: 'Sobrenome', flex: 0.6 },
-    { field: 'permission', headerName: 'Permissão', flex: 0.4 },
+    {
+      field: 'permission',
+      headerName: 'Permissão',
+      flex: 0.4,
+      valueGetter: (value) => PermissionLabels[value as Permissions]
+    },
     {
       field: 'organizationInfo',
       headerName: 'Organização',
@@ -56,12 +66,27 @@ export const UsersPage = () => {
           key="edit"
           icon={<EditIcon />}
           label="Editar"
+          disabled={
+            // Regra 1 — Apenas Master edita Master
+            (params.row.permission === Permissions.Master && userInfo?.permission !== Permissions.Master) ||
+            // Regra 2 — somente Admin, GuestAdmin e Master podem editar outros users
+            (userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission) && params.row.id !== userInfo.id) }
           onClick={() => handleEditUser(params.row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<DeleteIcon />}
           label="Delete"
+          disabled={
+          // Regra 1 — somente Admin, GuestAdmin e Master podem deletar
+          userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo?.permission) ||
+
+          // Regra 2 — usuário não pode se deletar
+          params.row.id === userInfo?.id ||
+
+          // Regra 3 — Master só pode ser deletado por Master
+          (params.row.permission === Permissions.Master && userInfo?.permission !== Permissions.Master)
+          }
           onClick={() => handleDeleteUserConfirmationRequired(params.row)}
         />,
       ],
@@ -133,6 +158,7 @@ export const UsersPage = () => {
             width: { xs: '100%', sm: '40%', md: '35%', lg: '25%' },
             mt: 2,
           }}
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={handleOpenUserCreationDialog}
         >
           Novo usuário

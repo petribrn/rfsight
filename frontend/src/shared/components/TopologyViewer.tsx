@@ -12,7 +12,7 @@ import { Skeleton, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 
 
-import { getLayoutedElements } from '../ts/helpers';
+import { formatThroughput, getLayoutedElements } from '../ts/helpers';
 import { DefaultTopologyNode, LldpTopologyNode, WifiStationTopologyNode } from './TopologyNodeTypes';
 
 type Props = {
@@ -42,13 +42,49 @@ export const TopologyViewer = ({ graph }: Props) => {
       })) ?? [];
 
     const edges: Edge[] =
-      (graph.links ?? []).map((l: any) => ({
-        id: l.id ?? `${l.source}-${l.target}`,
-        source: l.source,
-        target: l.target,
-        animated: !!l.animated,
-        selectable: false,
-      })) ?? [];
+      (graph.links ?? []).map((l: any) => {
+        const sourceNode = graph.nodes.find((n: any) => n.id === l.source);
+        const targetNode = graph.nodes.find((n: any) => n.id === l.target);
+
+        const sourceOffline = sourceNode?.type === "adoptedDevice" && sourceNode?.online === false;
+        const targetOffline = targetNode?.type === "adoptedDevice" && targetNode?.online === false;
+        const isDegraded = sourceOffline || targetOffline;
+
+        let label: string | undefined;
+
+        if (sourceNode?.type === "wifiStation") {
+          const dl = formatThroughput(sourceNode.throughput_rx_bps ?? 0);
+          const ul = formatThroughput(sourceNode.throughput_tx_bps ?? 0);
+          label = `↓ ${dl.value} ${dl.format} | ↑ ${ul.value} ${ul.format}`;
+        }
+
+        if (!label && targetNode?.type === "wifiStation") {
+          const dl = formatThroughput(targetNode.throughput_rx_bps ?? 0);
+          const ul = formatThroughput(targetNode.throughput_tx_bps ?? 0);
+          label = `↓ ${dl.value} ${dl.format} | ↑ ${ul.value} ${ul.format}`;
+        }
+
+        const strokeColor = isDegraded ? "#d32f2f" : "#999";
+        const labelBgColor = isDegraded ? "rgba(211,47,47,0.25)" : "rgba(255,255,255,0.6)";
+        const labelColor = isDegraded ? "#b71c1c" : "#333";
+
+        return {
+          id: l.id ?? `${l.source}-${l.target}`,
+          source: l.source,
+          target: l.target,
+          animated: !isDegraded && !!l.animated,
+          selectable: false,
+          label,
+          style: {
+            stroke: strokeColor,
+            strokeWidth: isDegraded ? 2 : 1.4,
+          },
+          labelBgPadding: [6, 3],
+          labelBgBorderRadius: 4,
+          labelBgStyle: { fill: labelBgColor },
+          labelStyle: { fontSize: "0.3rem", fontWeight: 600, fill: labelColor }
+        };
+      }) ?? [];
 
     const { nodes: laidOutNodes, edges: laidOutEdges } = getLayoutedElements(nodes, edges, {
       direction: 'TB',

@@ -1,4 +1,5 @@
 import { Box, Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
+import { formatThroughput } from '../../ts/helpers';
 
 interface IProps {
   download: number,
@@ -7,6 +8,8 @@ interface IProps {
 
 export const DownUpStatus = ({ download, upload }: IProps) => {
   const theme = useTheme();
+  const formattedDown = formatThroughput(download);
+  const formattedUp = formatThroughput(upload);
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 3}} height={'100%'}>
       <Paper
@@ -27,64 +30,24 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
         </Typography>
         <Stack width={'100%'} justifyContent={'center'} alignItems={'center'} direction={'row'} spacing={1} display={'flex'} useFlexGap>
           <Paper
-              variant="outlined"
-              sx={{
-                padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
-                backgroundColor: theme.palette.graphs.light,
-                opacity: '75%',
-                display: 'flex',
-                flexDirection: 'column',
-                width: '50%'
-              }}
-            >
-              <Box>
-                <Typography
-                  align="center"
-                  color={theme.palette.getContrastText(
-                    theme.palette.graphs.light
-                  )}
-                >
-                  Download
-                </Typography>
-                <Typography
-                  align="center"
-                  variant="body1"
-                  fontWeight={800}
-                  color={theme.palette.getContrastText(
-                    theme.palette.graphs.light
-                  )}
-                >
-                  {download}
-                </Typography>
-                <Typography
-                  align="center"
-                  variant="body1"
-                  color={theme.palette.getContrastText(
-                    theme.palette.graphs.light
-                  )}
-                >
-                  Mbps
-                </Typography>
-              </Box>
-            </Paper>
-            <Paper
-              variant="outlined"
-              sx={{
-                padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
-                backgroundColor: theme.palette.graphs.light,
-                opacity: '75%',
-                display: 'flex',
-                flexDirection: 'column',
-                width: '50%'
-              }}
-            >
+            variant="outlined"
+            sx={{
+              padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
+              backgroundColor: theme.palette.graphs.light,
+              opacity: '75%',
+              display: 'flex',
+              flexDirection: 'column',
+              width: '50%'
+            }}
+          >
+            <Box>
               <Typography
                 align="center"
                 color={theme.palette.getContrastText(
                   theme.palette.graphs.light
                 )}
               >
-                Upload
+                Download
               </Typography>
               <Typography
                 align="center"
@@ -94,7 +57,7 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                   theme.palette.graphs.light
                 )}
               >
-                {upload}
+                {formattedDown.value}
               </Typography>
               <Typography
                 align="center"
@@ -103,9 +66,49 @@ export const DownUpStatus = ({ download, upload }: IProps) => {
                   theme.palette.graphs.light
                 )}
               >
-                Mbps
+                {formattedDown.format}
               </Typography>
-            </Paper>
+            </Box>
+          </Paper>
+          <Paper
+            variant="outlined"
+            sx={{
+              padding: { xs: 1, sm: 1, md: 0.5, lg: 0.5 },
+              backgroundColor: theme.palette.graphs.light,
+              opacity: '75%',
+              display: 'flex',
+              flexDirection: 'column',
+              width: '50%'
+            }}
+          >
+            <Typography
+              align="center"
+              color={theme.palette.getContrastText(
+                theme.palette.graphs.light
+              )}
+            >
+              Upload
+            </Typography>
+            <Typography
+              align="center"
+              variant="body1"
+              fontWeight={800}
+              color={theme.palette.getContrastText(
+                theme.palette.graphs.light
+              )}
+            >
+              {formattedUp.value}
+            </Typography>
+            <Typography
+              align="center"
+              variant="body1"
+              color={theme.palette.getContrastText(
+                theme.palette.graphs.light
+              )}
+            >
+              {formattedUp.format}
+            </Typography>
+          </Paper>
         </Stack>
       </Paper>
     </Grid>

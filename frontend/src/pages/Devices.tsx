@@ -1,4 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -19,6 +20,7 @@ import { toast } from 'react-toastify';
 import {
   ConfirmationDialog,
   DeviceAdoptionDialog,
+  DeviceEditDialog,
   DeviceList,
 } from '../shared/components';
 import { BreadcrumbLink } from '../shared/components/BreadcrumbLink';
@@ -27,12 +29,14 @@ import { useRemoveDeviceMutation } from '../shared/store/slices/device/deviceApi
 import { useGetFullNetworksCollectionQuery } from '../shared/store/slices/network/networkApiSlice';
 import { useGetProfilesCollectionQuery } from '../shared/store/slices/profile/profileApiSlice';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
 import { formatLatency, formatUptime } from '../shared/ts/helpers';
 import { DefaultApiError } from '../shared/ts/interfaces';
 import { DeviceRow } from '../shared/ts/types';
 
 export const DevicesPage = () => {
   const [openAdoptionDialog, setOpenAdoptionDialog] = useState(false);
+  const [opendEditDialog, setOpenEditDialog] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [deviceFromAction, setDeviceFromAction] = useState<DeviceRow>();
   const [removeDevice] = useRemoveDeviceMutation();
@@ -156,12 +160,20 @@ export const DevicesPage = () => {
           icon={<SettingsIcon />}
           label="Configurar"
           onClick={() => handleConfigure(params.row)}
-          disabled={!params.row.online}
+          disabled={!params.row.online || (userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission))}
+        />,
+        <GridActionsCellItem
+          key="edit"
+          icon={<EditIcon />}
+          label="Editar"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
+          onClick={() => handleEdit(params.row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<DeleteIcon />}
           label="Delete"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleDeleteDeviceConfirmationRequired(params.row)}
         />,
       ],
@@ -176,6 +188,10 @@ export const DevicesPage = () => {
     setOpenAdoptionDialog(false);
   };
 
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+  }
+
   const handleCloseConfirmation = () => {
     setConfirmationDialogOpen(false);
   };
@@ -188,6 +204,12 @@ export const DevicesPage = () => {
   const handleConfigure = (device: DeviceRow) => {
     navigate(`/devices/${device.network}/${device.id}/configure`);
   };
+
+  const handleEdit = (device: DeviceRow) => {
+    setDeviceFromAction(device);
+    setOpenEditDialog(true);
+  }
+
   const handleDeleteDevice = async () => {
     handleCloseConfirmation();
     try {
@@ -228,6 +250,7 @@ export const DevicesPage = () => {
                   mt: 2,
                 }}
                 onClick={handleOpenAdoptionDialog}
+                disabled={![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
               >
                 Adotar dispositivo
               </Button>
@@ -236,7 +259,8 @@ export const DevicesPage = () => {
               open={openAdoptionDialog}
               handleClose={handleCloseAdoptionDialog}
               organizationId={userInfo.organizationId}
-            />{' '}
+            />
+            {deviceFromAction && <DeviceEditDialog open={opendEditDialog} handleClose={handleCloseEditDialog} deviceId={deviceFromAction?.id} organizationId={userInfo.organizationId}/>}
             <ConfirmationDialog
               open={confirmationDialogOpen}
               handleClose={handleCloseConfirmation}

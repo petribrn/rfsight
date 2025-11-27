@@ -1,7 +1,6 @@
 import ipaddress
 import re
 from datetime import datetime
-from email.policy import default
 from typing import List, Optional
 
 import pytz
@@ -9,11 +8,6 @@ import src.configs.constants as constants
 from bson import ObjectId
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 from pydantic_core import PydanticCustomError
-from src.models.API.andromeda.Andromeda import Andromeda
-from src.models.API.network.Network import Network
-from src.models.API.services.Services import Services
-from src.models.API.system.System import System
-from src.models.API.wireless.Wireless import Wireless
 from typing_extensions import Annotated
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -100,7 +94,6 @@ class DeviceToAdopt(BaseModel):
         'O profileId do dispositivo é inválido.',
         {'profileId': value},
       )
-
 
 class Device(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
@@ -198,29 +191,12 @@ class DeviceCollection(BaseModel):
   devices: List[Device]
 
 class DeviceUpdate(BaseModel):
-  is_active: Optional[bool] = Field(default=None)
   mac_address: Optional[str] = None
   ip_address: Optional[str] = Field(default=None)
   user: Optional[str] = Field(default=None)
   password: Optional[str] = Field(default=None)
-  wireless_configs: Optional[Wireless] = None
-  network_configs: Optional[Network] = None
-  system_configs: Optional[System] = None
-  services_configs: Optional[Services] = None
-  andromeda_configs: Optional[Andromeda] = None
   networkId: Optional[PyObjectId] | None = ''
   profileId: Optional[PyObjectId] | None = ''
-
-  @field_validator('is_active')
-  def validate_is_active(cls, value):
-    if not isinstance(value, bool):
-      raise PydanticCustomError(
-        'invalid_is_active_error',
-        'A flag is_active é inválida.',
-        {'is_active': value},
-      )
-
-    return value
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):

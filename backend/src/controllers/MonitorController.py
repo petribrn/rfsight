@@ -221,9 +221,9 @@ class MonitorController:
     Perform discovery for a single network.
     Returns a graph dict (nodes, links) or an error dict.
     """
-    mapping = MappingTable()  # ephemeral mapping per-network
+    mapping = MappingTable()
     try:
-      # get devices for this network (async)
+
       network_devices = await DeviceRepository.list_devices_by_compound_filter(
         db=db,
         compound_filter={'networkId': {'$in': [network.id]}}
@@ -257,13 +257,13 @@ class MonitorController:
       updated_graph = MonitorController.__enrich_graph_with_nmap(graph, arp_results, mapping)
 
       async with MonitorController.topology_lock:
-        # Critical point: update adopted devices ip address to match discovery when found in mapping
         for dev in network_devices.devices:
           name = dev.name or None
           mapped_ip = mapping.resolve_name(name) if name else None
           if mapped_ip and mapped_ip != dev.ip_address:
             try:
-              await DeviceRepository.update_device_ip(db, dev.id, mapped_ip)
+              async with constants.DEVICE_UPDATE_LOCK:
+                await DeviceRepository.update_device_ip(db, dev.id, mapped_ip)
             except (Exception, HTTPException) as e:
               print(f'Ocorreu um erro ao atualizar o IP do dispositivo {dev.name}: {e}')
 

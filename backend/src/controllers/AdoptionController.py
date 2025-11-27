@@ -1,7 +1,6 @@
 import asyncio
 import ipaddress
 import subprocess as sp
-import time
 from queue import Queue
 from threading import Lock, Thread
 from typing import List
@@ -108,6 +107,23 @@ class AdoptionController:
     )
 
     return device_to_adopt
+
+  def match_discovered_device(self, mac, ip):
+    with self.lock:
+      for d in self.available_devices:
+        if mac and ip:
+          if (d.mac_address == mac and d.ip_address == ip) or \
+            (d.mac_address == mac) or \
+            (d.ip_address == ip):
+              return d
+        elif mac:
+          if d.mac_address == mac:
+            return d
+        else:  # ip only
+          if d.ip_address == ip:
+            return d
+
+      return None
 
   def _run_task(self):
     while True:

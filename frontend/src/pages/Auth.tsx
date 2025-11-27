@@ -1,5 +1,4 @@
-import { Grid, Typography, useTheme } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Grid, useTheme } from '@mui/material';
 import { AuthForm, PageGridCenteredContainer } from '../shared/components';
 
 export const AuthPage = () => {
@@ -11,7 +10,7 @@ export const AuthPage = () => {
           <Grid>
             <AuthForm />
           </Grid>
-          <Grid>
+          {/* <Grid>
             <Typography align="right">
               Não possui uma conta?{' '}
               <Link
@@ -24,7 +23,7 @@ export const AuthPage = () => {
                 Registre-se
               </Link>
             </Typography>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Grid>
     </PageGridCenteredContainer>

@@ -103,6 +103,19 @@ export const createWebsocketMiddleware = (wsUrl: string): Middleware => {
           }
           case 'topology': {
             const orgs = (msg as WebsocketTopologyMessage).data.organizations ?? {};
+
+            const now = Date.now();
+
+            for (const [, orgData] of Object.entries(orgs)) {
+              for (const [, netData] of Object.entries(orgData.networks ?? {})) {
+                for (const node of netData.nodes ?? []) {
+                  if (node.type === "wifiStation") {
+                    node.timestamp = now;
+                  }
+                }
+              }
+            }
+
             store.dispatch(topologyActions.mergeTopology(orgs));
             break;
           }

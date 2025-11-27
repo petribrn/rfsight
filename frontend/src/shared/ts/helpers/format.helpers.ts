@@ -24,3 +24,21 @@ export const formatLatency = (ms: number | undefined | null): string => {
 
   return `${sec}s`;
 }
+
+export const formatThroughput = (bps: number): {value: string, format: string} => {
+  if (!bps || bps <= 0) return {value: '0', format: 'bps'};
+
+  if (bps >= 1_000_000_000) {
+    return {value: (bps / 1_000_000_000).toFixed(2), format: 'Gbps'};
+  }
+
+  if (bps >= 1_000_000) {
+    return {value: (bps / 1_000_000).toFixed(2), format: 'Mbps'};
+  }
+
+  if (bps >= 1_000) {
+    return {value: (bps / 1_000).toFixed(2), format: 'Kbps'};
+  }
+
+  return {value: bps.toFixed(2), format: 'bps'};
+};

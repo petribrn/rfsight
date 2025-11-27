@@ -72,7 +72,7 @@ class DeviceRepository:
 
   @classmethod
   async def validate_new_device_info(cls, db: DB, existent_device: Device, new_device_data: DeviceUpdate,
-                                     config_update_needed: bool, network_update_needed: bool):
+                                     profile_update_needed: bool, network_update_needed: bool):
 
     # Create a copy from original device to be updated
     validated_new_device = existent_device.model_copy()
@@ -103,19 +103,8 @@ class DeviceRepository:
     if network_update_needed:
       validated_new_device.networkId = new_device_data.networkId
 
-    # CHECK CONFIG UPDATE NEEDED
-    if config_update_needed:
-      # Validate system configs present
-      if new_device_data.system_configs:
-        # Check device name
-        if new_device_data.system_configs.device.name != existent_device.name:
-          new_name_already_taken = await cls.get_device_by(db, field="name", value=new_device_data.system_configs.device.name)
-          if new_name_already_taken:
-            raise http_exceptions.UNIQUE_FIELD_DATA_ALREADY_EXISTS(field='Nome do dispositivo')
-          validated_new_device.name = new_device_data.system_configs.device.name
-        # Check device location
-        if existent_device.location != new_device_data.system_configs.device.location:
-          validated_new_device.location = new_device_data.system_configs.device.location
+    if profile_update_needed:
+      validated_new_device.profileId = new_device_data.profileId
 
     return validated_new_device
 

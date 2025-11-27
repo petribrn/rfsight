@@ -69,4 +69,4 @@ export const DeviceAdoptSchema = Joi.object({
   password: DevicePasswdSchema,
   networkId: DeviceNetworkIdSchema,
   profileId: DeviceProfileIdSchema,
-});
+}).or('mac_address', 'ip_address');

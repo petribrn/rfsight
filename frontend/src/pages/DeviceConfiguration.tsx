@@ -7,8 +7,9 @@ import {
   Tabs,
   Typography
 } from '@mui/material';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   BreadcrumbLink,
   DeviceActionExecutor,
@@ -22,10 +23,24 @@ import { useGetDeviceByIdQuery } from '../shared/store/slices/device/deviceApiSl
 import { useGetNetworkByIdQuery } from '../shared/store/slices/network/networkApiSlice';
 import { selectCurrentOrg } from '../shared/store/slices/organization/organizationSlice';
 import { useGetProfileByIdQuery } from '../shared/store/slices/profile/profileApiSlice';
+import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
 
 export const DeviceConfigurationPage = () => {
   const { networkId, deviceId } = useParams();
   const currentOrg = useAppSelector(selectCurrentOrg);
+  const userInfo = useAppSelector(selectUserInfo);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (userInfo){
+      if (![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)){
+        toast.error('Permissões insuficientes!');
+        navigate('/dashboard');
+      }
+    }
+  }, [userInfo])
 
   const { data: device, isLoading: isLoadingDevice } =
     useGetDeviceByIdQuery(deviceId!);

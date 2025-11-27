@@ -367,7 +367,7 @@ export const DeviceAdoptionDialog = ({
         </Box>
         <Box display={'flex'} gap={1} flexDirection={'row'}>
           {!isLoadingOrgNetworks && networks ? (
-            <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
+            <FormControl required sx={{ mt: 2, width: { xs: '50%' } }}>
               <InputLabel id="network-type-select-label" disabled={networks.networks.length < 1} required>
                 Rede
               </InputLabel>
@@ -375,9 +375,8 @@ export const DeviceAdoptionDialog = ({
                 labelId="network-type-select-label"
                 id="network-type-select"
                 value={selectedNetwork}
-                label="Tipo"
+                label="Rede"
                 required
-                error={networks.networks.length > 0 && !selectedNetwork}
                 disabled={networks.networks.length < 1}
                 onChange={handleSelectNetwork}
               >
@@ -392,7 +391,7 @@ export const DeviceAdoptionDialog = ({
             <Skeleton />
           )}
           {!isLoadingProfiles && profiles ? (
-            <FormControl sx={{ mt: 2, width: { xs: '50%' } }}>
+            <FormControl required sx={{ mt: 2, width: { xs: '50%' } }}>
               <InputLabel id="profile-select-label" disabled={profiles.profiles.length < 1} required>
                 Profile
               </InputLabel>
@@ -400,9 +399,8 @@ export const DeviceAdoptionDialog = ({
                 labelId="profile-select-label"
                 id="profile-select"
                 value={selectedProfile}
-                label="Tipo"
+                label="Profile"
                 required
-                error={profiles.profiles.length > 0 && !selectedProfile}
                 disabled={profiles.profiles.length < 1}
                 onChange={handleSelectProfile}
               >

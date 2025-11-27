@@ -1,7 +1,5 @@
 import asyncio
 import functools
-import hashlib
-import json
 import re
 import socket
 import time
@@ -11,8 +9,6 @@ import bcrypt
 import src.configs.constants as constants
 import src.shared.http_exceptions as http_exceptions
 from bson import ObjectId
-from retry import retry
-from src.models.API.Configuration import DeviceConfiguration
 
 
 def hash_passwd(password: str):
@@ -58,13 +54,6 @@ def check_port(host: str, port: int) -> bool:
     return True
   except socket.error as e:
     return False
-
-def hash_device_config(device_config: DeviceConfiguration):
-  dhash = hashlib.md5()
-  config_dict = device_config.model_dump(by_alias=True)
-  encoded = json.dumps(config_dict, sort_keys=True).encode()
-  dhash.update(encoded)
-  return dhash.hexdigest()
 
 def get_nested_value(data_dict: dict, key_path: str):
     """

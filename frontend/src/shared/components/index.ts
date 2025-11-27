@@ -14,6 +14,7 @@ export * from './DataGridToolbar';
 export * from './DeviceActionExecutor';
 export * from './DeviceActionsMenu';
 export * from './DeviceAdoptionDialog';
+export * from './DeviceEditDialog';
 export * from './DeviceList';
 export * from './ForgotPasswordForm';
 export * from './Header';

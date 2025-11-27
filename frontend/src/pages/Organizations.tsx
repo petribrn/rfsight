@@ -6,7 +6,10 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { BreadcrumbLink, ConfirmationDialog, OrganizationList } from "../shared/components";
 import { OrganizationDialog } from "../shared/components/OrganizationDialog";
+import { useAppSelector } from '../shared/hooks';
 import { useRemoveOrganizationMutation } from "../shared/store/slices/organization/organizationApiSlice";
+import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
 import { DefaultApiError } from "../shared/ts/interfaces";
 import { OrganizationRow } from "../shared/ts/types";
 
@@ -18,6 +21,7 @@ export const OrganizationsPage = () => {
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [orgDialogOperation, setOrgDialogOperation] = useState<'create' | 'edit'>('create');
   const [removeOrganization] = useRemoveOrganizationMutation();
+  const userInfo = useAppSelector(selectUserInfo);
 
   const handleOpenOrganizationDialog = () => {
     setOrganizationDialogOpen(true);
@@ -51,12 +55,14 @@ export const OrganizationsPage = () => {
           key="edit"
           icon={<EditIcon />}
           label="Editar"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleEditOrg(params.row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<DeleteIcon />}
           label="Delete"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleDeleteOrgConfirmationRequired(params.row)}
         />,
       ],
@@ -136,6 +142,7 @@ export const OrganizationsPage = () => {
             mt: 2,
           }}
           onClick={handleOpenOrganizationDialog}
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
         >
           Criar organização
         </Button>

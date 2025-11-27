@@ -19,6 +19,12 @@ export type UserFormInfo = {
   organizationId: string;
 }
 
+export type UserUpdateResponse = {
+  success: boolean,
+  message: string,
+  newUserData: UserInfo
+}
+
 export type UserRow = {
   id: string;
   username: string;

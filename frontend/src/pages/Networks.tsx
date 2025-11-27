@@ -22,6 +22,7 @@ import {
 import { useAppSelector } from '../shared/hooks';
 import { useRemoveNetworkMutation } from '../shared/store/slices/network/networkApiSlice';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
 import { DefaultApiError } from '../shared/ts/interfaces';
 import { NetworkRow } from '../shared/ts/types';
 
@@ -84,12 +85,14 @@ export const NetworksPage = () => {
           key="edit"
           icon={<EditIcon />}
           label="Editar"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleEditNetwork(params.row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<DeleteIcon />}
           label="Delete"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleDeleteNetworkConfirmationRequired(params.row)}
         />,
       ],
@@ -157,6 +160,7 @@ export const NetworksPage = () => {
                   mt: 2,
                 }}
                 onClick={handleOpenNetworkDialog}
+                disabled={![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
               >
                 Criar rede
               </Button>

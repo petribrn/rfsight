@@ -22,6 +22,7 @@ import {
 import { useAppSelector } from '../shared/hooks';
 import { useRemoveProfileMutation } from '../shared/store/slices/profile/profileApiSlice';
 import { selectUserInfo } from '../shared/store/slices/user/userSlice';
+import { Permissions } from '../shared/ts/enums';
 import { DefaultApiError } from '../shared/ts/interfaces';
 import { ProfileActions, ProfileRow } from '../shared/ts/types';
 
@@ -77,12 +78,14 @@ export const ProfilesPage = () => {
           key="edit"
           icon={<EditIcon />}
           label="Editar"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleEditProfile(params.row)}
         />,
         <GridActionsCellItem
           key="delete"
           icon={<DeleteIcon />}
           label="Delete"
+          disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
           onClick={() => handleDeleteProfileConfirmationRequired(params.row)}
         />,
       ],
@@ -150,6 +153,7 @@ export const ProfilesPage = () => {
                   mt: 2,
                 }}
                 onClick={handleOpenProfileDialog}
+                disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
               >
                 Criar profile
               </Button>

@@ -1,8 +1,6 @@
 import asyncio
-import ssl
 from contextlib import asynccontextmanager
 
-import src.configs.constants as constants
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
@@ -12,8 +10,8 @@ from fastapi.responses import JSONResponse
 from src.configs.constants import API_PORT
 from src.controllers.MonitorController import MonitorController
 from src.database.db import get_db
-from src.routers import (auth, configurations, devices, monitor, networks,
-                         organizations, profiles, users)
+from src.routers import (auth, devices, monitor, networks, organizations,
+                         profiles, users)
 
 load_dotenv()
 
@@ -32,21 +30,9 @@ app.include_router(devices.router)
 app.include_router(profiles.router)
 app.include_router(organizations.router)
 app.include_router(networks.router)
-app.include_router(configurations.router)
 app.include_router(monitor.router)
 
 origins = [
-    'https://localhost:6791',
-    'https://localhost:6791/',
-    'https://local.rfsight.com:6791',
-    'https://local.rfsight.com:6791/',
-    'https://local.rfsight.com',
-    'https://local.rfsight.com/',
-    'https://localhost',
-    'localhost',
-    '15.0.0.3',
-    '172.18.0.3',
-    'nginx',
     'https://ui.rfsight.duckdns.org'
 ]
 
@@ -58,9 +44,6 @@ app.add_middleware(
   allow_headers=["*"],
   expose_headers=["*"]
 )
-
-# ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-# ssl_context.load_cert_chain(certfile=constants.SSL_CERT_PATH, keyfile=constants.SSL_KEY_PATH)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

@@ -146,8 +146,6 @@ def parse_station_table(rows: List[Tuple[str, str]], model: StationTableModel):
   # <root>.<entry>.<field_id>.<index...>
   index_offset = root_len + 2
 
-  MAC_FIELD_NAMES = {"mac", "mac_address", "mac_addr"}
-
   for oid, val in rows:
     if not oid.startswith(model.root_oid):
       continue
@@ -173,7 +171,7 @@ def parse_station_table(rows: List[Tuple[str, str]], model: StationTableModel):
     st = stations.setdefault(index_tuple, {})
 
     # Handle MAC field automatically based on name
-    if field_name.lower() in MAC_FIELD_NAMES:
+    if field_name.lower() in constants.MAC_FIELD_NAMES:
       st["mac"] = decode_mac(val)
     else:
       st[field_name] = val

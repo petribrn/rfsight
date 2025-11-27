@@ -18,9 +18,14 @@ import {
 } from '@mui/material';
 import Joi from 'joi';
 import { Dispatch, SetStateAction, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useAppDispatch, useAppSelector, useLogout } from '../hooks';
 import { useGetAllOrganizationsQuery } from '../store/slices/organization/organizationApiSlice';
 import { useUpdateUserMutation } from '../store/slices/user/userApiSlice';
+import { selectUserInfo, setUserInfo } from '../store/slices/user/userSlice';
+import { Permissions } from '../ts/enums';
+import { PermissionLabels } from '../ts/helpers';
 import { DefaultApiError } from '../ts/interfaces';
 import { UserInfo } from '../ts/types';
 import {
@@ -43,6 +48,8 @@ export const ManageUserForm = ({ user }: IProps) => {
   const [updateUser, { isLoading }] = useUpdateUserMutation();
   const { data: organizationCollection, isLoading: orgsLoading } =
         useGetAllOrganizationsQuery();
+  const loggedUserInfo = useAppSelector(selectUserInfo);
+  const logout = useLogout();
 
   // States
   const [username, setUsername] = useState(user.username);
@@ -62,6 +69,9 @@ export const ManageUserForm = ({ user }: IProps) => {
   const [lastNameErr, setLastNameErr] = useState('');
   const [permissionErr, setPermissionErr] = useState('');
   const [submitErrMsg, setSubmitErrMsg] = useState('');
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   // Handlers
   const handleFieldChange = (
@@ -118,6 +128,16 @@ export const ManageUserForm = ({ user }: IProps) => {
     try {
       const updated = await updateUser({ id: user.id, updateUserData: {...payload} }).unwrap();
       toast.success(updated.message);
+      if (loggedUserInfo && user.id === loggedUserInfo.id) {
+        if (loggedUserInfo.permission !== updated.newUserData.permission){
+          toast.info('Suas permissões mudaram, finalizando sessão.');
+          setTimeout(async () => {
+            await logout();
+            navigate('/auth');
+          }, 2000);
+        }
+      }
+      dispatch(setUserInfo(updated.newUserData));
     } catch (err) {
       const apiErr = err as DefaultApiError;
       setSubmitErrMsg(apiErr.detail.message);
@@ -235,12 +255,13 @@ export const ManageUserForm = ({ user }: IProps) => {
         </FormControl>}
 
         {/* Permission */}
-        <FormControl fullWidth sx={{ marginTop: '1rem' }} error={!!permissionErr}>
+        {loggedUserInfo && <FormControl disabled={user.permission === Permissions.Master} fullWidth sx={{ marginTop: '1rem' }} error={!!permissionErr}>
           <InputLabel id="permission-label">Permissão</InputLabel>
           <Select
             labelId="permission-label"
             label="Permissão"
             value={permission}
+            disabled={user.permission === Permissions.Master}
             onChange={(e) =>
               handleFieldChange(
                 e.target.value,
@@ -250,14 +271,14 @@ export const ManageUserForm = ({ user }: IProps) => {
               )
             }
           >
-            {[1, 2, 3, 4, 5].map((p) => (
+            {Object.values(Permissions).filter(value => typeof value === 'number' && value <= loggedUserInfo.permission).map((p) => (
               <MenuItem key={p} value={String(p)}>
-                {p}
+                {PermissionLabels[p as Permissions]}
               </MenuItem>
             ))}
           </Select>
           <FormHelperText>{permissionErr}</FormHelperText>
-        </FormControl>
+        </FormControl>}
 
         <Button
           variant="contained"

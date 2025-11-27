@@ -7,9 +7,8 @@ import {
   NetworksPage,
   OrganizationsPage,
   ProfilesPage,
-  RegisterPage,
   ResetPasswordPage,
-  UsersPage,
+  UsersPage
 } from '../pages';
 import { AuthPage } from '../pages/Auth';
 import { ManageUserPage } from '../pages/ManageUser';
@@ -29,7 +28,7 @@ export default function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/auth" element={<AuthPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      {/* <Route path="/register" element={<RegisterPage />} /> */}
       <Route path="/forgot-password/" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
@@ -41,6 +40,7 @@ export default function AppRoutes() {
                 Permissions.Guest,
                 Permissions.GuestAdmin,
                 Permissions.GuestMonitor,
+                Permissions.Monitor,
                 Permissions.Admin,
                 Permissions.Master,
               ]}
@@ -81,6 +81,18 @@ export default function AppRoutes() {
               />
             }
           />
+        </Route>
+        <Route
+          element={
+            <PrivateRoutes
+              allowedPermissions={[
+                Permissions.GuestAdmin,
+                Permissions.Admin,
+                Permissions.Master,
+              ]}
+            />
+          }
+        >
           <Route
             path="/devices/:networkId/:deviceId/configure"
             element={

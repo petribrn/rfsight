@@ -5,6 +5,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import WifiTetheringIcon from '@mui/icons-material/WifiTethering';
 import {
   AppBar,
+  Box,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -14,7 +16,7 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  styled,
+  styled
 } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,12 +26,16 @@ import {
   selectCurrentToken,
   selectCurrentUser,
 } from '../store/slices/auth/authSlice';
+import { selectCurrentOrg } from '../store/slices/organization/organizationSlice';
+import { selectUserInfo } from '../store/slices/user/userSlice';
+import { Permissions } from '../ts/enums';
+import { PermissionLabels } from '../ts/helpers';
 import { SideMenu } from './SideMenu';
 
 const Offset = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 export const Header = () => {
-  const { toggleTheme, themeName } = useAppThemeContext(); // theme hook to get value from context
+  const { toggleTheme, themeName } = useAppThemeContext();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
@@ -44,6 +50,8 @@ export const Header = () => {
 
   const currentToken = useAppSelector(selectCurrentToken);
   const currentUsername = useAppSelector(selectCurrentUser);
+  const userInfo = useAppSelector(selectUserInfo);
+  const currentOrg = useAppSelector(selectCurrentOrg);
   const logout = useLogout();
 
   const navigate = useNavigate();
@@ -100,6 +108,21 @@ export const Header = () => {
           </Typography>
           {currentToken ? (
             <>
+              {currentOrg && userInfo &&
+                <Box>
+                  <Tooltip title={'Clique para alterar'}>
+                    <Chip
+                      onClick={() => navigate(`/users/${currentUsername}`)}
+                      disabled={![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo?.permission)}
+                      size='small'
+                      variant='outlined'
+                      color='info'
+                      sx={{mr: 1, lineHeight: 1.1, verticalAlign: 'middle'}}
+                      label={`Organização ativa: ${currentOrg.name}`}
+                    />
+                  </Tooltip>
+                </Box>
+              }
               <Tooltip title="Menu de usuário" arrow>
                 <IconButton
                   onClick={handleOpenMenu}
@@ -122,8 +145,16 @@ export const Header = () => {
                 <MenuItem>
                   <Typography variant="body2">{`Olá, @${currentUsername}.`}</Typography>
                 </MenuItem>
+                {userInfo &&
+                  <MenuItem disabled>
+                    {<Typography variant='caption'>Acesso: <strong>{PermissionLabels[userInfo.permission as Permissions]}</strong></Typography>}
+                  </MenuItem>
+                }
                 <Divider />
-                <MenuItem onClick={() => navigate(`/users/${currentUsername}`)}>
+                <MenuItem
+                  onClick={() => navigate(`/users/${currentUsername}`)}
+                  disabled={userInfo !== null && ![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(userInfo.permission)}
+                >
                   <Typography variant="body2">Minha conta</Typography>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>

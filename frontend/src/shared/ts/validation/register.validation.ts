@@ -54,7 +54,7 @@ export const PasswordSchema = Joi.string()
 
 export const PermissionSchema = Joi.number()
   .optional()
-  .valid(1,2,3,4,5)
+  .valid(0,1,2,3,4,5)
   .label('Permissão')
   .messages({
     'any.only': '{{#label}} deve ser um dos seguintes valores: 1, 2, 3, 4 ou 5.',

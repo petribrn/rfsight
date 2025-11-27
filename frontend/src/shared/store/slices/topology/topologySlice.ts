@@ -96,8 +96,37 @@ const slice = createSlice({
                 return incomingIds.has(n.id);
               })
               .map(n => {
+                // const inc = incomingNodes.find(x => x.id === n.id);
+                // return inc ? { ...n, ...inc } : n;
                 const inc = incomingNodes.find(x => x.id === n.id);
-                return inc ? { ...n, ...inc } : n;
+
+                if (!inc) return n;
+
+                // --- Station Throughput delta ----
+                if (inc.type === "wifiStation") {
+                  const prevRx = n.rx_bytes ?? 0;
+                  const prevTx = n.tx_bytes ?? 0;
+                  const prevTs = n.timestamp ?? null;
+
+                  const newRx = inc.rx_bytes ?? prevRx;
+                  const newTx = inc.tx_bytes ?? prevTx;
+                  const newTs = inc.timestamp ?? null;
+
+                  if (prevTs && newTs && newTs > prevTs) {
+                    const dt = (newTs - prevTs) / 1000; // seconds
+                    inc.throughput_rx_bps = dt > 0 ? ((newRx - prevRx) * 8) / dt : 0;
+                    inc.throughput_tx_bps = dt > 0 ? ((newTx - prevTx) * 8) / dt : 0;
+                  } else {
+                    inc.throughput_rx_bps = 0;
+                    inc.throughput_tx_bps = 0;
+                  }
+
+                  inc.prev_rx_bytes = prevRx;
+                  inc.prev_tx_bytes = prevTx;
+                  inc.prev_timestamp = prevTs;
+                }
+
+                return { ...n, ...inc };
               }),
 
             ...incomingNodes

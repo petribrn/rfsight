@@ -45,8 +45,8 @@ export const NetworkGraphWrapper = ({ organizationId, network }: IProps) => {
         {!isLoading && <Grid container justifyContent={'center'} alignItems={'center'} spacing={1} columns={{xs: 1, sm: 2, md: 2, lg: 12}}>
           <DevicesStatus online={networkMetrics.online || 0} offline={networkMetrics.offline || 0} />
           <ConnectedStationsStatus stations={networkMetrics.stations || 0} />
-          <DownUpStatus download={123} upload={123} />
-          <NetworkHealthStatus health={networkMetrics.health || 0} />
+          <DownUpStatus download={networkMetrics.download} upload={networkMetrics.upload} />
+          <NetworkHealthStatus health={networkMetrics.health.healthScore || 0} explanation={networkMetrics.health.healthScoreExplanation} />
         </Grid>}
         {isLoading && <Box display={'flex'} height={'100%'} width={'100%'} justifyContent={'center'} alignItems={'center'}>
           <Typography mr={1}>Carregando dados da rede...</Typography>

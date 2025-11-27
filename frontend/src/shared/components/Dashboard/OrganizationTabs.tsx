@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { SyntheticEvent, useState } from 'react';
+import { Permissions } from '../../ts/enums';
 import { UserInfo } from '../../ts/types';
 import { OrganizationCreation } from '../OrganizationCreation';
 import { OrganizationsSelection } from '../OrganizationsSelection';
@@ -49,7 +50,11 @@ export const OrganizationTabs = ({
           aria-label="organization tabs"
         >
           <Tab label="Selecionar" {...a11yProps(0)} />
-          <Tab label="Criar" {...a11yProps(1)} />
+          <Tab
+            label="Criar"
+            {...a11yProps(1)}
+            disabled={![Permissions.Admin, Permissions.GuestAdmin, Permissions.Master].includes(currentUserInfo.permission)}
+          />
         </Tabs>
       </Box>
       <ScrollSnapper index={value} onIndexChange={handleChangeIndex}>

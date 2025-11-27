@@ -152,7 +152,7 @@ async def edit_user(user_id: str, new_user_data: UserUpdate, current_user: User 
         raise http_exceptions.MOVE_ITEM_TO_ORGANIZATION_FAILED(item_type='usuário')
     # --------------------- ORGANIZATION RELATED ---------------------
 
-    return {'success': True, 'message': 'Usuário atualizado.'}
+    return {'success': True, 'message': 'Usuário atualizado com sucesso.', 'newUserData': updated_user.model_dump(by_alias=False, exclude=['password'])}
   except HTTPException as h:
     raise h
   except Exception as e:

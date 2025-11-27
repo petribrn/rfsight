@@ -3,6 +3,7 @@ import { normalizeApiError } from '../../../ts/helpers';
 import {
   ExecuteActionSequencePayload,
   IAdoptDevicePayload,
+  IEditDevicePayload,
   IGetDeviceCollectionPayload
 } from '../../../ts/interfaces';
 import {
@@ -49,7 +50,21 @@ export const deviceApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: payload.sequence,
         credentials: 'include'
-      })
+      }),
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    updateDeviceById: builder.mutation<DefaultResponse, IEditDevicePayload>({
+      query: (payload) => ({
+        url: `${ApiRoutes.Devices}/${payload.deviceId}/edit`,
+        method: 'POST',
+        body: payload.deviceEditData,
+        credentials: 'include'
+      }),
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
     }),
     getDeviceCollectionByOrgNetwork: builder.query<
       DeviceCollection,
@@ -119,4 +134,5 @@ export const {
   useLazyGetDeviceCollectionByOrganizationQuery,
   useRemoveDeviceMutation,
   useGetDeviceConfigByIdQuery,
+  useUpdateDeviceByIdMutation
 } = deviceApiSlice;

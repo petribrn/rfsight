@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import pytz
@@ -17,9 +18,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 1
 RESET_PASSWORD_EXPIRE_MINUTES = 10
 
-SSL_CERT_PATH = './certs/cert.pem'
-SSL_KEY_PATH = './certs/key.pem'
-
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 
 API_MAIL_CONF = ConnectionConfig(
@@ -37,7 +35,7 @@ API_MAIL_CONF = ConnectionConfig(
 
 LOCAL_TIMEZONE = pytz.timezone('America/Sao_Paulo')
 
-USER_PERMISSIONS = {'guest': 0, 'guest_monitor': 1, 'guest_admin': 2, 'monitor': 3, 'admin': 4, 'master': 5}
+USER_PERMISSIONS = {'guest': 0, 'guest_monitor': 1, 'monitor': 2, 'guest_admin': 3, 'admin': 4, 'master': 5}
 
 MONGODB_HOST = os.getenv('MONGODB_HOST')
 MONGODB_LOGIN = os.getenv('MONGODB_LOGIN')
@@ -58,14 +56,15 @@ BASE_PLACEHOLDERS = {
   "DEVICE_MODEL": "device.model",
 }
 
-CONFIGURATION_THREAD_NUMBER = 10
-
 # SNMP AND DISCOVERY RELATED
 WEBSOCKET_DEVICE_MONITOR_POLL_RATE = 10
 WEBSOCKET_TOPOLOGY_POLL_RATE = 30
 DOCKER_CONTAINER_API_INTERFACE = os.getenv('API_CONTAINER_INTERFACE')
 FIND_DEVICES_COMMAND = f"""arp-scan -I {DOCKER_CONTAINER_API_INTERFACE} --localnet -q"""
 DEVICE_CONN_TIMEOUT = 20
+MAC_FIELD_NAMES = {"mac", "mac_address", "mac_addr"}
+
+DEVICE_UPDATE_LOCK = asyncio.Lock()
 
 RETRY_STRATEGY = Retry(
   total=3,

@@ -4,7 +4,7 @@ import {
   IRegisterUserPayload,
   IUpdateUserPayload,
 } from '../../../ts/interfaces';
-import { DefaultResponse, UserInfo, UserRow } from '../../../ts/types';
+import { DefaultResponse, UserInfo, UserRow, UserUpdateResponse } from '../../../ts/types';
 import { apiSlice } from '../api/apiSlice';
 
 export const userApiSlice = apiSlice.injectEndpoints({
@@ -20,7 +20,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
-    updateUser: builder.mutation<DefaultResponse, IUpdateUserPayload>({
+    updateUser: builder.mutation<UserUpdateResponse, IUpdateUserPayload>({
       query: (updateUserPayload) => ({
         url: `${ApiRoutes.Users}/${updateUserPayload.id}/edit`,
         method: 'PATCH',

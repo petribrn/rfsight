@@ -52,7 +52,7 @@ class DeviceDriver:
     try:
       action = self.profile.actions[action_name]
     except KeyError:
-      raise http_exceptions.CONFIG_ACTION_FAILED(
+      raise http_exceptions.DEVICE_API_FAIL(
         f"Ação '{action_name}' não definida no profile '{self.profile.name}'."
       )
 

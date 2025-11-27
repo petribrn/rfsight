@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.database.db import DB, get_db
 from src.models.Network import Network, NetworkUpdate
 from src.models.User import User
-from src.repositories.configuration import ConfigurationRepository
 from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
@@ -155,10 +154,6 @@ async def delete_network(network_id: str, current_user: User = Depends(get_curre
     removed_adopted_devices, devices_ids_list = await DeviceRepository.remove_all_network_devices(db, network_id=network_id)
     if not removed_adopted_devices:
         raise http_exceptions.REMOVE_DEVICE_FROM_NET_FAILED
-
-    deleted_configs = await ConfigurationRepository.delete_config_of_devices_list(db, devices_list=devices_ids_list)
-    if not deleted_configs:
-      raise http_exceptions.CONFIG_ACTION_FAILED(action='apagar')
 
     return {'success': True, 'message': f'Rede removida.'}
   except HTTPException as h:

@@ -39,6 +39,18 @@ export interface IAdoptDevicePayload {
   profileId: string;
 }
 
+export interface IEditDevicePayload {
+  deviceId: string;
+  deviceEditData: {
+    mac_address?: string | null;
+    ip_address?: string | null;
+    user?: string;
+    password?: string;
+    networkId?: string;
+    profileId?: string;
+  }
+}
+
 export interface IDeviceListProps {
   organizationId: string;
   networkId?: string | null;

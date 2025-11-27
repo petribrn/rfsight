@@ -1,5 +1,4 @@
 from datetime import datetime
-from email.policy import default
 from typing import Annotated, Any, Dict, List, Literal, Optional
 
 import pytz
