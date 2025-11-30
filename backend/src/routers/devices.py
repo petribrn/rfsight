@@ -17,7 +17,6 @@ from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
 from src.repositories.profile import ProfileRepository
-from src.services.device_driver import DeviceDriver
 from src.services.oauth import get_current_user
 from src.shared.utils import validate_id
 
@@ -25,7 +24,6 @@ router = APIRouter(prefix='/devices', tags=['devices'])
 
 queue = Queue()
 lock = threading.Lock()
-config_controller = ConfigController()
 adoption_controller = AdoptionController(queue=queue, available_devices_lock=lock)
 adoption_controller.start()
 
@@ -228,64 +226,7 @@ async def execute_device_action_sequence(
       if not profile:
         raise http_exceptions.DOCUMENT_INEXISTENT("Profile não encontrado.")
 
-      driver = DeviceDriver(device=existent_device, profile=profile)
-
-      results: List[ActionSequenceResponse] = []
-
-      for action_payload in sequence.actions:
-        action_name = action_payload.action_name
-        payload = action_payload.payload
-
-        action_to_run = profile.actions.get(action_name)
-
-        if not action_to_run:
-          results.append(ActionSequenceResponse(
-            action=action_name,
-            status='failed',
-            message=f"Ação '{action_name}' não encontrada no profile."
-          ))
-          break
-
-        if action_to_run.actionType != 'manage':
-          results.append(ActionSequenceResponse(
-            action=action_name,
-            status='failed',
-            message=f"Ação '{action_name}' não é do tipo 'manage'."
-          ))
-          break
-
-        try:
-          print(f"Executing action '{action_name}' for device {existent_device.ip_address}...")
-
-          result = await asyncio.to_thread(
-            driver.execute_action,
-            action_name,
-            payload
-          )
-
-          results.append(ActionSequenceResponse(
-            action=action_name,
-            status='success',
-            message=f"Ação '{action_name}' executada com sucesso.",
-            data=result
-          ))
-
-        except HTTPException as httpex:
-          print(f"Action '{action_name}' failed: {httpex.detail}")
-          results.append(ActionSequenceResponse(
-            action=action_name,
-            status='failed',
-            message=str(httpex.detail)
-          ))
-          break
-        except Exception as e:
-          print(f"Action '{action_name}' failed: {e}")
-          results.append(ActionSequenceResponse(
-            action=action_name,
-            status='failed',
-            message=str(e)
-          ))
-          break
+      results: List[ActionSequenceResponse] = await ConfigController.execute_sequence(device=existent_device, profile=profile, sequence=sequence)
 
       return results
 
