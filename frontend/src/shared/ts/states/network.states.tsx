@@ -15,6 +15,11 @@ export const NetworkListColumns: GridColDef<NetworkRow>[] = [
     width: 130,
   },
   {
+    field: 'network_cidr',
+    headerName: 'Tipo',
+    width: 130,
+  },
+  {
     field: 'location',
     headerName: 'Localização',
     width: 130,

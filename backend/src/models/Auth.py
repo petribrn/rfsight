@@ -30,6 +30,14 @@ class ForgetPasswordPayload(BaseModel):
         {'email': value},
       )
 
+class ValidatePasswordPayload(BaseModel):
+  userId: str
+  currentPassword: str
+
+class ResetPasswordAdminPayload(BaseModel):
+  userId: str
+  newPassword: str
+
 class ResetPasswordPayload(BaseModel):
   password: str = Field(min_length=8)
   passwordConfirmation: str = Field(min_length=8)

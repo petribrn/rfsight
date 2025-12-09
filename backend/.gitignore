@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 #Custom
-certs/*.pem
+certs/
 
 # C extensions
 *.so

@@ -8,16 +8,18 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { GridCellParams } from '@mui/x-data-grid';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useRemoveProfileMutation } from '../store/slices/profile/profileApiSlice';
 import { DefaultApiError } from '../ts/interfaces';
 import { ConfirmationDialog } from './ConfirmationDialog';
+import { ProfileDialog } from './ProfileDialog';
 
 export const ProfileActionsMenu = (params: GridCellParams) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [removeProfile] = useRemoveProfileMutation();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -31,14 +33,34 @@ export const ProfileActionsMenu = (params: GridCellParams) => {
     setConfirmationDialogOpen(false);
   };
 
-  const { row } = params;
+  const handleOpenProfileDialog = () => {
+    setProfileDialogOpen(true);
+  };
+
+  const handleCloseProfileDialog = () => {
+    setProfileDialogOpen(false);
+  };
+
+  useEffect(() => {
+    const handleContextMenu = (e: PointerEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
+  });
+
+  const { row } = params; // Profile data
   const { id } = row;
 
   const handleVisualize = () => {
-    handleCloseMenu();
+    handleOpenProfileDialog();
   };
   const handleEdit = () => {
-    handleCloseMenu();
+    handleOpenProfileDialog();
   };
   const handleRemove = async () => {
     handleCloseConfirmation();
@@ -74,7 +96,7 @@ export const ProfileActionsMenu = (params: GridCellParams) => {
         slotProps={{
           list: {
             'aria-labelledby': `action-button-${id}`,
-          }
+          },
         }}
       >
         <MenuItem onClick={handleVisualize}>
@@ -110,6 +132,12 @@ export const ProfileActionsMenu = (params: GridCellParams) => {
         confirmButtonText="Remover"
         closeButtonText="Cancelar"
       />
+      <ProfileDialog
+        open={profileDialogOpen}
+        handleClose={handleCloseProfileDialog}
+        operation="edit"
+        originalProfileData={row}
+      ></ProfileDialog>
     </Box>
   );
 };

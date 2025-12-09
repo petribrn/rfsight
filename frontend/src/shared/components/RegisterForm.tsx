@@ -97,7 +97,7 @@ export const RegisterForm = () => {
     });
 
     if (validationError) {
-      setSubmitErrMsg(validationError.message);
+      return setSubmitErrMsg(validationError.message);
     }
 
     try {

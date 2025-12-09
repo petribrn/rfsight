@@ -1,8 +1,26 @@
+import { NetworkData, OrganizationRow } from "../types";
+
 export interface IOrganization {
   id: string;
   name: string;
   users: Array<string>;
   networks: Array<string>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IOrganizationDialogProps {
+  open: boolean;
+  handleClose: () => void;
+  operation: 'create' | 'edit';
+  originalOrganizationData?: OrganizationRow;
+}
+
+export interface IDetailedOrganization {
+  id: string;
+  name: string;
+  users: Array<string>;
+  networks: Array<NetworkData>;
   createdAt: Date;
   updatedAt: Date;
 }

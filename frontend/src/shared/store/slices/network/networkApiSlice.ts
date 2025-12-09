@@ -40,21 +40,32 @@ export const networkApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
-    getNetworksCollectionByOrg: builder.query<NetworkCollection, string | null>(
-      {
-        query: (organizationId) => {
-          return {
-            url: `${ApiRoutes.Networks}/list?organizationId=${organizationId}`,
-            method: 'GET',
-            credentials: 'include',
-          };
-        },
-        providesTags: ['Network'],
-        transformErrorResponse(baseQueryReturnValue) {
-          return normalizeApiError(baseQueryReturnValue);
-        },
-      }
-    ),
+    getFullNetworksCollection: builder.query<NetworkCollection, void>({
+      query: () => {
+        return {
+          url: `${ApiRoutes.Networks}`,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Network'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    getNetworksCollectionByOrg: builder.query<NetworkCollection, string | null>({
+      query: (organizationId) => {
+        return {
+          url: `${ApiRoutes.Networks}/list?organizationId=${organizationId}`,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Network'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
     getNetworkById: builder.query<NetworkData, string>({
       query: (networkId) => {
         return {
@@ -70,7 +81,7 @@ export const networkApiSlice = apiSlice.injectEndpoints({
     editNetworkById: builder.mutation<DefaultResponse, INetworkUpdatePayload>({
       query: (networkUpdatePayload) => {
         return {
-          url: `${ApiRoutes.Networks}/${networkUpdatePayload.id}`,
+          url: `${ApiRoutes.Networks}/${networkUpdatePayload.id}/edit`,
           method: 'PATCH',
           credentials: 'include',
           body: { ...networkUpdatePayload.newNetworkData },
@@ -90,4 +101,5 @@ export const {
   useGetNetworkByIdQuery,
   useEditNetworkByIdMutation,
   useRemoveNetworkMutation,
+  useGetFullNetworksCollectionQuery,
 } = networkApiSlice;

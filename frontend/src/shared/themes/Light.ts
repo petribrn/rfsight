@@ -8,7 +8,7 @@ import { ptBR } from '@mui/material/locale';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    companyExtra: {
+    graphs: {
       main: string;
       dark: string;
       light: string;
@@ -17,7 +17,7 @@ declare module '@mui/material/styles' {
   }
   // allow configuration using `createTheme`
   interface PaletteOptions {
-    companyExtra?: {
+    graphs?: {
       main?: string;
       dark?: string;
       light?: string;
@@ -46,7 +46,7 @@ export const LightTheme = createTheme(
         default: '#f7f6f3',
         paper: '#ffffff',
       },
-      companyExtra: {
+      graphs: {
         main: '#00B26B',
         dark: '#163134',
         light: '#D4E167',

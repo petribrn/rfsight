@@ -4,7 +4,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.database.db import DB, get_db
 from src.models.Organization import Organization
-from src.models.User import User, UserUpdate
+from src.models.User import User, UserRow, UserUpdate
 from src.repositories.organization import OrganizationRepository
 from src.repositories.user import UserRepository
 from src.services.oauth import get_current_user
@@ -16,7 +16,28 @@ router = APIRouter(prefix='/users', tags=['users'])
 async def users(current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
     users = await UserRepository.list_users(db)
-    return users
+    users = users["users"]
+
+    # coletar todos organizationIds válidos
+    org_ids = list({u.get("organizationId") for u in users if u.get("organizationId")})
+
+    # consultar todas as orgs em uma unica query
+    org_map = await OrganizationRepository.get_organizations_by_ids(db, [ObjectId(orgId) for orgId in org_ids])
+
+    # montar resposta
+    result = []
+    for u in users:
+      org_info = None
+      org_id = str(u.get("organizationId"))
+
+      if org_id and org_id in org_map:
+        org_info = {
+          "organizationId": org_id,
+          "name": org_map[org_id]["name"]
+        }
+      result.append(UserRow(**u, organizationInfo=org_info).model_dump(by_alias=False))
+
+    return result
   except HTTPException as h:
     raise h
   except Exception as error:
@@ -59,10 +80,10 @@ async def get_user_org(user_id: str, current_user: User = Depends(get_current_us
     if not user_existent:
       raise http_exceptions.DOCUMENT_INEXISTENT(document='usuário')
 
-    if not user_existent['organizationId']:
+    if not user_existent.organizationId:
       raise http_exceptions.DOCUMENT_INEXISTENT('organização do usuário')
 
-    user_organization = await OrganizationRepository.get_organization_by(db, field='_id', value=user_existent['organizationId'])
+    user_organization = await OrganizationRepository.get_organization_by(db, field='_id', value=user_existent.organizationId)
     if not user_organization:
       raise http_exceptions.DOCUMENT_INEXISTENT('organização do usuário')
 
@@ -131,7 +152,7 @@ async def edit_user(user_id: str, new_user_data: UserUpdate, current_user: User 
         raise http_exceptions.MOVE_ITEM_TO_ORGANIZATION_FAILED(item_type='usuário')
     # --------------------- ORGANIZATION RELATED ---------------------
 
-    return {'success': True, 'message': f'Usuário {user_id} atualizado.'}
+    return {'success': True, 'message': 'Usuário atualizado com sucesso.', 'newUserData': updated_user.model_dump(by_alias=False, exclude=['password'])}
   except HTTPException as h:
     raise h
   except Exception as e:
@@ -156,7 +177,7 @@ async def delete_user(user_id: str, current_user: User = Depends(get_current_use
       if not removed_user_from_org:
         raise http_exceptions.REMOVE_ITEM_FROM_ORG_FAILED(item_type='usuário')
 
-    return {'success': True, 'message': f'Usuário {deleted_user.id} deletado.'}
+    return {'success': True, 'message': 'Usuário deletado.'}
   except HTTPException as h:
     raise h
   except Exception as e:

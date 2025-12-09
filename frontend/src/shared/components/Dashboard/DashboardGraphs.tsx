@@ -1,53 +1,47 @@
+import { FormControl, InputLabel, MenuItem, Paper, Select, SelectChangeEvent } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import Grid from '@mui/material/Grid';
-import { useGetOrganizationByIdQuery } from '../../store/slices/organization/organizationApiSlice';
+import { useEffect, useState } from 'react';
+import { useGetDetailedOrganizationByIdQuery } from '../../store/slices/organization/organizationApiSlice';
 import { IDashboardGraphsProps } from '../../ts/interfaces';
-import { DashboardAccordion } from '../DashboardAccordion';
 import { NoNetworksAvailable } from '../NoNetworksAvailable';
-import { ConnectedCPEsChart } from './ConnectedCPEsChart';
-import { ConnectedCPEsStatus } from './ConnectedCPEsStatus';
-import { DevicesStatus } from './DevicesStatus';
-import { DownUpStatus } from './DownUpStatus';
-import { NetworkHealthStatus } from './NetworkHealthStatus';
+import { NetworkGraphWrapper } from './NetworkGraphWrapper';
 
 export const DashboardGraphs = ({ organizationId }: IDashboardGraphsProps) => {
   const { data: organizationData, isLoading } =
-    useGetOrganizationByIdQuery(organizationId);
+    useGetDetailedOrganizationByIdQuery(organizationId);
+  const [selectedNetwork, setSelectedNetwork] = useState('');
+
+  useEffect(() => {
+    if (!isLoading) {
+      if(organizationData && organizationData.networks.length > 0) setSelectedNetwork(organizationData.networks[0].id);
+    }
+  }, [isLoading, organizationData])
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedNetwork(event.target.value as string);
+  };
 
   // eslint-disable-next-line no-nested-ternary
   return !isLoading && organizationData ? (
-    organizationData.networks.length > 0 ? (
+    organizationData.networks.length > 0 && selectedNetwork ? (
       <>
-        <DashboardAccordion
-          defaultExpanded
-          id="general-info"
-          title="Informações gerais da rede"
-        >
-          <Grid container justifyContent={'center'} alignItems={'center'} spacing={1} columns={{xs: 1, sm: 2, md: 2, lg: 12}}>
-            <DevicesStatus networks={organizationData!.networks} />
-            <ConnectedCPEsStatus networks={organizationData!.networks} />
-            <DownUpStatus networks={organizationData!.networks} />
-            <NetworkHealthStatus networks={organizationData!.networks} />
-          </Grid>
-          {/* <Stack spacing={1} justifyContent={'center'} alignItems={'center'} direction={'row'} useFlexGap sx={{flexWrap: 'wrap'}}>
-            <DevicesStatus networks={organizationData!.networks} />
-            <ConnectedCPEsStatus networks={organizationData!.networks} />
-            <DownUpStatus networks={organizationData!.networks} />
-            <NetworkHealthStatus networks={organizationData!.networks} />
-          </Stack> */}
-        </DashboardAccordion>
-        <DashboardAccordion
-          defaultExpanded
-          id="connected-cpes-chart"
-          title="CPEs Conectadas"
-        >
-          <Grid container size={12} gap={1} justifyContent="space-evenly">
-            <Grid size={{xs: 12}} height="30vh">
-              <ConnectedCPEsChart />
-            </Grid>
-          </Grid>
-        </DashboardAccordion>
+        <Paper sx={{p: 2}}>
+          <FormControl variant='outlined'>
+            <InputLabel id="select-network-label">Rede</InputLabel>
+            <Select
+              labelId="select-network-label"
+              id="select-network"
+              value={selectedNetwork}
+              label="Rede"
+              onChange={handleChange}
+              size='small'
+            >
+              {organizationData.networks.map((net, index) => <MenuItem key={net.id} value={net.id}>{net.name}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Paper>
+        <NetworkGraphWrapper organizationId={organizationData.id} network={organizationData.networks.filter((net) => net.id === selectedNetwork)[0]}></NetworkGraphWrapper>
       </>
     ) : (
       <NoNetworksAvailable />

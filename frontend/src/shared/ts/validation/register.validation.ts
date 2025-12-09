@@ -52,12 +52,33 @@ export const PasswordSchema = Joi.string()
     'any.required': '{{#label}} é obrigatória.',
   });
 
+export const PermissionSchema = Joi.number()
+  .optional()
+  .valid(0,1,2,3,4,5)
+  .label('Permissão')
+  .messages({
+    'any.only': '{{#label}} deve ser um dos seguintes valores: 1, 2, 3, 4 ou 5.',
+    'number.base': '{{#label}} deve ser um número.',
+  });
+
+export const UserOrganizationSchema = Joi.string()
+  .required()
+  .label('Organização do usuário')
+  .messages({
+    'string.min': '{{#label}} deve conter no mínimo 3 caracteres.',
+    'string.empty': '{{#label}} não deve estar vazio.',
+    'string.base': '{{#label}} deve ser um texto.',
+    'any.required': '{{#label}} é obrigatório.',
+  });
+
 export const RegisterSchema = Joi.object({
   username: UsernameSchema,
   email: EmailSchema,
   firstName: FirstNameSchema,
   lastName: LastNameSchema,
   password: PasswordSchema,
+  permission: PermissionSchema,
+  organizationId: UserOrganizationSchema,
   passwordConfirmation: Joi.any()
     .equal(Joi.ref('password'))
     .required()

@@ -8,22 +8,29 @@ import src.configs.constants as constants
 from bson import ObjectId
 from pydantic import BaseModel, BeforeValidator, Field, field_validator
 from pydantic_core import PydanticCustomError
-from src.models.API.andromeda.Andromeda import Andromeda
-from src.models.API.network.Network import Network
-from src.models.API.services.Services import Services
-from src.models.API.system.System import System
-from src.models.API.wireless.Wireless import Wireless
 from typing_extensions import Annotated
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+class DiscoveredDevice(BaseModel):
+  mac_address: str = Field(min_length=12, default=None)
+  ip_address: str = Field(...)
+
 class DeviceToAdopt(BaseModel):
-  mac_address: Optional[str] = Field(min_length=12, default=None)
+  id: Optional[PyObjectId] = Field(alias="_id", default=None)
+  is_active: Optional[bool] = Field(default=None)
+  name: Optional[str] = Field(min_length=3, default=None)
+  mac_address: str = Field(min_length=12, default=None)
   ip_address: Optional[str] = Field(default=None)
-  user: str = Field(default='admin')
-  password: str = Field(default='admin')
+  model: Optional[str] = Field(min_length=3, default=None)
+  user: str = Field(...)
+  password: str = Field(...)
+  fw_version: Optional[str] = Field(min_length=1, default=None)
+  location: Optional[str] = Field(min_length=3, default=None)
   networkId: PyObjectId | None = Field(default=None)
   profileId: PyObjectId | None = Field(default=None)
+  createdAt: Optional[datetime | None] = Optional[Field(...)]
+  updatedAt: Optional[datetime | None] = Optional[Field(...)]
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):
@@ -88,21 +95,19 @@ class DeviceToAdopt(BaseModel):
         {'profileId': value},
       )
 
-
 class Device(BaseModel):
   id: Optional[PyObjectId] = Field(alias="_id", default=None)
   is_active: bool = Field(default=None)
-  name: str = Field(min_length=3)
+  name: str = Field(min_length=3, default='Dispositivo')
   mac_address: str = Field(min_length=12)
   ip_address: str = Field(...)
-  model: str = Field(min_length=3)
+  model: str = Field(min_length=3, default='Desconhecido')
   user: str = Field(...)
   password: str = Field(...)
-  fw_version: str = Field(min_length=1)
-  location: str = Field(min_length=3)
+  fw_version: str = Field(min_length=1, default='N/A')
+  location: str = Field(min_length=3, default='Desconhecida')
   networkId: PyObjectId | None = Field(default=None)
   profileId: PyObjectId | None = Field(default=None)
-  configId: PyObjectId | None = Field(default=None)
   createdAt: datetime | None = Optional[Field(...)]
   updatedAt: datetime | None = Optional[Field(...)]
 
@@ -182,49 +187,16 @@ class Device(BaseModel):
         {'profileId': value},
       )
 
-  @field_validator('configId')
-  def validate_configId(cls, value):
-    if value is None:
-      return value
-    try:
-      is_valid_id = ObjectId.is_valid(value)
-      if not is_valid_id:
-        raise Exception
-      return value
-    except Exception as e:
-      raise PydanticCustomError(
-        'invalid_configId_error',
-        'O configId do dispositivo é inválido.',
-        {'configId': value},
-      )
-
 class DeviceCollection(BaseModel):
   devices: List[Device]
 
 class DeviceUpdate(BaseModel):
-  is_active: Optional[bool] = Field(default=None)
   mac_address: Optional[str] = None
   ip_address: Optional[str] = Field(default=None)
   user: Optional[str] = Field(default=None)
   password: Optional[str] = Field(default=None)
-  wireless_configs: Optional[Wireless] = None
-  network_configs: Optional[Network] = None
-  system_configs: Optional[System] = None
-  services_configs: Optional[Services] = None
-  andromeda_configs: Optional[Andromeda] = None
   networkId: Optional[PyObjectId] | None = ''
   profileId: Optional[PyObjectId] | None = ''
-
-  @field_validator('is_active')
-  def validate_is_active(cls, value):
-    if not isinstance(value, bool):
-      raise PydanticCustomError(
-        'invalid_is_active_error',
-        'A flag is_active é inválida.',
-        {'is_active': value},
-      )
-
-    return value
 
   @field_validator('mac_address')
   def validate_mac_address(cls, value):

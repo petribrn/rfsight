@@ -1,3 +1,4 @@
+import ipaddress
 from datetime import datetime
 from typing import List
 
@@ -71,7 +72,7 @@ class DeviceRepository:
 
   @classmethod
   async def validate_new_device_info(cls, db: DB, existent_device: Device, new_device_data: DeviceUpdate,
-                                     config_update_needed: bool, network_update_needed: bool):
+                                     profile_update_needed: bool, network_update_needed: bool):
 
     # Create a copy from original device to be updated
     validated_new_device = existent_device.model_copy()
@@ -102,19 +103,8 @@ class DeviceRepository:
     if network_update_needed:
       validated_new_device.networkId = new_device_data.networkId
 
-    # CHECK CONFIG UPDATE NEEDED
-    if config_update_needed:
-      # Validate system configs present
-      if new_device_data.system_configs:
-        # Check device name
-        if new_device_data.system_configs.device.name != existent_device.name:
-          new_name_already_taken = await cls.get_device_by(db, field="name", value=new_device_data.system_configs.device.name)
-          if new_name_already_taken:
-            raise http_exceptions.UNIQUE_FIELD_DATA_ALREADY_EXISTS(field='Nome do dispositivo')
-          validated_new_device.name = new_device_data.system_configs.device.name
-        # Check device location
-        if existent_device.location != new_device_data.system_configs.device.location:
-          validated_new_device.location = new_device_data.system_configs.device.location
+    if profile_update_needed:
+      validated_new_device.profileId = new_device_data.profileId
 
     return validated_new_device
 
@@ -126,6 +116,45 @@ class DeviceRepository:
     stored_new_device_data = await db.devices_collection.find_one_and_update({'_id': device_id},
                                                                              {'$set': new_device_data.model_dump(by_alias=True, exclude=['id'])},
                                                                              return_document=True)
+
+    return Device(**stored_new_device_data)
+
+  @classmethod
+  async def update_device_ip(cls, db: DB, device_id: ObjectId, new_ip_address: str) -> Device:
+    # Validate device ID and find the device
+    device = await cls.get_device_by(db, field="_id", value=device_id)
+    if not device:
+      raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
+
+    # If same IP, nothing to update
+    if device.ip_address == new_ip_address:
+      return device
+
+    try:
+      valid_new_ip_address = ipaddress.ip_address(new_ip_address)
+    except ValueError:
+      raise http_exceptions.INVALID_FIELD(field='new ip_address')
+
+    # Check if new IP address already exists in another device
+    ip_conflict = await cls.get_device_by(db, field="ip_address", value=valid_new_ip_address)
+    if ip_conflict:
+      raise http_exceptions.UNIQUE_FIELD_DATA_ALREADY_EXISTS(field='Endereço IP')
+
+    # Apply update
+    updated_at = datetime.fromisoformat(
+      datetime.now(tz=constants.LOCAL_TIMEZONE).isoformat()
+    )
+
+    update_data = {
+      "ip_address": valid_new_ip_address,
+      "updatedAt": updated_at
+    }
+
+    stored_new_device_data = await db.devices_collection.find_one_and_update(
+      {"_id": validate_id(device_id, "device_id")},
+      {"$set": update_data},
+      return_document=True
+    )
 
     return Device(**stored_new_device_data)
 

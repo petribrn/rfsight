@@ -25,6 +25,13 @@ class ProfileRepository:
     return profiles
 
   @classmethod
+  async def get_all_profiles_as_map(cls, db: DB):
+    profiles = await db.profiles_collection.find({}).to_list(1000)
+    collection = ProfileCollection(profiles=profiles)
+    mapping = {x.id: x for x in collection.profiles}
+    return mapping
+
+  @classmethod
   async def get_profile_by(cls, db: DB, field: str, value):
     if field not in ('_id', 'name'):
       raise http_exceptions.INVALID_FIELD(field=f'campo de filtro {field} de profile')
@@ -62,6 +69,14 @@ class ProfileRepository:
 
     if profile_update_data.name:
       updated_profile.name = profile_update_data.name
+      need_update = True
+
+    if profile_update_data.apiBaseUrl:
+      updated_profile.apiBaseUrl = profile_update_data.apiBaseUrl
+      need_update = True
+
+    if profile_update_data.stationTable:
+      updated_profile.stationTable = profile_update_data.stationTable
       need_update = True
 
     if profile_update_data.actions:

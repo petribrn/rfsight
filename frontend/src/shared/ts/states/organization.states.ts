@@ -1,4 +1,4 @@
-import { GridColDef } from '@mui/x-data-grid/models/colDef/gridColDef';
+import { GridColDef } from '@mui/x-data-grid';
 import { IOrganizationState } from '../interfaces';
 import { OrganizationRow } from '../types';
 
@@ -11,23 +11,30 @@ export const OrganizationSelectionColumns: GridColDef<OrganizationRow>[] = [
   {
     field: 'name',
     headerName: 'Nome',
-    width: 150,
+    flex: 1
   },
   {
     field: 'numberOfUsers',
     headerName: 'Qtd. de usuários',
     type: 'number',
-    width: 130,
+    flex: 0.4
   },
   {
     field: 'numberOfNetworks',
     headerName: 'Qtd. de redes',
     type: 'number',
-    width: 130,
+    flex: 0.4
   },
   {
     field: 'createdAt',
     headerName: 'Data de criação',
-    width: 450,
+    valueFormatter: (value: Date) => value.toLocaleString('pt-BR'),
+    flex: 0.4,
+  },
+  {
+    field: 'updatedAt',
+    headerName: 'Data de atualização',
+    valueFormatter: (value: Date) => value.toLocaleString('pt-BR'),
+    flex: 0.4,
   },
 ];

@@ -11,7 +11,6 @@ class DB:
 
     self.user_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('users')
     self.devices_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('devices')
-    self.configurations_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('configurations')
     self.profiles_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('profiles')
     self.networks_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('networks')
     self.organizations_collection: motor_asyncio.AsyncIOMotorCollection = self.__get_collection('organizations')
@@ -25,9 +24,6 @@ class DB:
   def devices_collection(self):
     return self.devices_collection
 
-  def configurations_collection(self):
-    return self.configurations_collection
-
   def profiles_collection(self):
     return self.profiles_collection
 
@@ -36,7 +32,6 @@ class DB:
 
   def organizations_collection(self):
     return self.organizations_collection
-
 
 def get_db():
   return DB()

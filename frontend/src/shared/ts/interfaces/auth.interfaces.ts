@@ -25,8 +25,23 @@ export interface IRefreshResponse {
   username: string;
 }
 
+export interface IValidatePasswordResponse{
+  success: boolean;
+  valid: boolean;
+}
+
 export interface IForgotPasswdPayload {
   email: string;
+}
+
+export interface IValidatePasswordPayload {
+  userId: string;
+  currentPassword: string;
+}
+
+export interface IResetPasswdAdminPayload {
+  userId: string;
+  newPassword: string;
 }
 
 export interface IResetPasswdPayload {

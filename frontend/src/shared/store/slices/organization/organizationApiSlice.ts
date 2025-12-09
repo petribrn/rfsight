@@ -1,6 +1,7 @@
 import { ApiRoutes } from '../../../ts/enums';
 import { normalizeApiError } from '../../../ts/helpers';
 import {
+  IDetailedOrganization,
   INewOrganizationPayload,
   IOrgUpdate,
   IOrganization,
@@ -43,10 +44,34 @@ export const orgApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
+    getDetailedOrganizationById: builder.query<IDetailedOrganization, string>({
+      query: (organizationId) => {
+        return {
+          url: `${ApiRoutes.Organizations}/detailed-info/${organizationId}`,
+          credentials: 'include',
+          method: 'GET',
+        };
+      },
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
     getUserOrganization: builder.query<IOrganization, string>({
       query: (userId) => {
         return {
-          url: `${ApiRoutes.Users}/${userId}/orgazization`,
+          url: `${ApiRoutes.Users}/${userId}/organization`,
+          credentials: 'include',
+          method: 'GET',
+        };
+      },
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    getUserOrganizationPostAuth: builder.mutation<IOrganization, string>({
+      query: (userId) => {
+        return {
+          url: `${ApiRoutes.Users}/${userId}/organization`,
           credentials: 'include',
           method: 'GET',
         };
@@ -72,13 +97,27 @@ export const orgApiSlice = apiSlice.injectEndpoints({
       query: (orgUpdatePayload) => {
         return {
           url: `${ApiRoutes.Organizations}/${orgUpdatePayload.organizationId}/edit`,
-          method: 'POST',
+          method: 'PATCH',
           credentials: 'include',
           body: {
             name: orgUpdatePayload.name,
           },
         };
       },
+      invalidatesTags: ['Organization'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
+    removeOrganization: builder.mutation<DefaultResponse, string>({
+      query: (organizationId) => {
+        return {
+          url: `${ApiRoutes.Organizations}/${organizationId}/delete`,
+          method: 'DELETE',
+          credentials: 'include',
+        };
+      },
+      invalidatesTags: ['Organization'],
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },
@@ -88,8 +127,11 @@ export const orgApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetUserOrganizationQuery,
+  useGetDetailedOrganizationByIdQuery,
   useChangeOrganizationNameMutation,
   useGetAllOrganizationsQuery,
   useCreateNewOrganizationMutation,
   useGetOrganizationByIdQuery,
+  useGetUserOrganizationPostAuthMutation,
+  useRemoveOrganizationMutation
 } = orgApiSlice;

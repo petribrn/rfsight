@@ -1,4 +1,5 @@
-import ssl
+import asyncio
+from contextlib import asynccontextmanager
 
 import src.configs.constants as constants
 import uvicorn
@@ -7,14 +8,22 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from src.configs.constants import API_PORT
-from src.routers import (auth, configurations, devices, monitor, networks,
-                         organizations, profiles, users)
+from src.controllers.MonitorController import MonitorController
+from src.database.db import get_db
+from src.routers import (auth, devices, monitor, networks, organizations,
+                         profiles, users)
 
 load_dotenv()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  app.state.db = get_db()
+  asyncio.create_task(MonitorController.device_monitor_loop(app=app))
+  asyncio.create_task(MonitorController.topology_loop(app=app))
+  yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -22,13 +31,11 @@ app.include_router(devices.router)
 app.include_router(profiles.router)
 app.include_router(organizations.router)
 app.include_router(networks.router)
-app.include_router(configurations.router)
-# app.include_router(monitor.router)
+app.include_router(monitor.router)
 
-origins = ['https://localhost',
-           'localhost',
-          'https://localhost:6791',
-          'https://local.rfsight.com']
+origins = [
+    f'https://{constants.UI_HOST}'
+]
 
 app.add_middleware(
   CORSMiddleware,
@@ -38,9 +45,6 @@ app.add_middleware(
   allow_headers=["*"],
   expose_headers=["*"]
 )
-
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain(certfile=constants.SSL_CERT_PATH, keyfile=constants.SSL_KEY_PATH)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

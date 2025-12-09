@@ -1,12 +1,12 @@
 import { Grid, Paper, Stack, Typography, useTheme } from '@mui/material';
 
 interface IDeviceStatusProps {
-  networks: Array<string>;
+  online: number,
+  offline: number
 }
 
-export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
+export const DevicesStatus = ({ online, offline }: IDeviceStatusProps) => {
   const theme = useTheme();
-  console.log(networks);
   return (
     <Grid justifyContent="center" alignItems="center" size={{xs: 1, sm: 1, md: 1, lg: 3}} height={'100%'}>
       <Paper
@@ -44,7 +44,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
                   theme.palette.success.main
                 )}
               >
-                On-line
+                Online
               </Typography>
               <Typography
                 align="center"
@@ -54,7 +54,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
                   theme.palette.success.main
                 )}
               >
-                0
+                {online}
               </Typography>
             </Paper>
             <Paper
@@ -62,7 +62,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
               sx={{
                 padding: { xs: 1 },
                 pb: { xs: 2 },
-                backgroundColor: theme.palette.companyExtra.grey,
+                backgroundColor: theme.palette.graphs.grey,
                 opacity: '75%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -72,7 +72,7 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
               <Typography
                 align="center"
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.grey
+                  theme.palette.graphs.grey
                 )}
               >
                 Offline
@@ -82,10 +82,10 @@ export const DevicesStatus = ({ networks }: IDeviceStatusProps) => {
                 variant="h6"
                 fontWeight={700}
                 color={theme.palette.getContrastText(
-                  theme.palette.companyExtra.grey
+                  theme.palette.graphs.grey
                 )}
               >
-                0
+                {offline}
               </Typography>
             </Paper>
         </Stack>

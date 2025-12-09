@@ -1,31 +1,24 @@
 import asyncio
-import json
-import random
 import threading
-from datetime import datetime
 from queue import Queue
-from typing import Iterator, Literal
+from typing import List
 
 import src.configs.constants as constants
 import src.shared.http_exceptions as http_exceptions
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, status
 from src.controllers.AdoptionController import AdoptionController
-from src.controllers.config.ConfigController import ConfigController
+from src.controllers.ConfigController import ConfigController
 from src.database.db import DB, get_db
-from src.models.API.Configuration import DeviceConfiguration
-from src.models.Configuration import Configuration
+from src.models.Actions import ActionSequencePayload, ActionSequenceResponse
 from src.models.Device import (Device, DeviceCollection, DeviceToAdopt,
                                DeviceUpdate)
 from src.models.User import User
-from src.repositories.configuration import ConfigurationRepository
 from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
 from src.repositories.profile import ProfileRepository
 from src.services.oauth import get_current_user
 from src.shared.utils import validate_id
-from sse_starlette import EventSourceResponse
 
 router = APIRouter(prefix='/devices', tags=['devices'])
 
@@ -34,7 +27,6 @@ lock = threading.Lock()
 adoption_controller = AdoptionController(queue=queue, available_devices_lock=lock)
 adoption_controller.start()
 
-config_controller = ConfigController()
 
 @router.get('/list', status_code=status.HTTP_200_OK, response_model=DeviceCollection, response_model_by_alias=False)
 async def devices(organizationId: str, networkId: str = None, profileId: str = None, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
@@ -78,54 +70,37 @@ async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = De
                                        constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
       raise http_exceptions.NO_PERMISSION
 
+    if device_adopt_data.networkId:
+      # Check if network exists
+      device_network = await NetworkRepository.get_network_by(db, field='_id', value=device_adopt_data.networkId)
+      if not device_network:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document='rede do dispositivo')
+
     # Check if device is not already adopted
     if all([x is None for x in [device_adopt_data.mac_address, device_adopt_data.ip_address]]):
       raise http_exceptions.INVALID_FIELD(field='Endereco IP ou MAC')
     field = 'mac_address' if device_adopt_data.mac_address else 'ip_address'
     value = device_adopt_data.mac_address if field == 'mac_address' else device_adopt_data.ip_address
 
-    device, config = await adoption_controller.find_device(device=device_adopt_data)
-
-    device_already_adopted = await DeviceRepository.get_device_by(db, field='mac_address', value=device.mac_address)
+    device_already_adopted = await DeviceRepository.get_device_by(db, field=field, value=value)
     if device_already_adopted:
       raise http_exceptions.DEVICE_ALREADY_ADOPTED
 
-    device_config = Configuration(configs=config)
+    # Search for device and get initial info
+    discovered_device_to_adopt = await adoption_controller.find_device(device=device_adopt_data, db=db)
 
-    if device.networkId:
-      # Check if network exists
-      device_network = await NetworkRepository.get_network_by(db, field='_id', value=device.networkId)
-      if not device_network:
-        raise http_exceptions.DOCUMENT_INEXISTENT(document='rede do dispositivo')
+    print(f'Discovery: {discovered_device_to_adopt}')
 
-    if device.profileId:
-      # Check if profile exists
-      device_profile = await ProfileRepository.get_profile_by(db, field='_id', value=device.profileId)
-      if not device_profile:
-        raise http_exceptions.DOCUMENT_INEXISTENT(document='profile do dispositivo')
-    else:
-      device.is_active = False
-
-    # Create a new device document
-    new_device_id = await DeviceRepository.create_device(db, new_device_data=device)
-    new_device_obj = await DeviceRepository.get_device_by(db, field='_id', value=new_device_id)
-
-    device_config.deviceId = new_device_id
-
-    new_config_id = await ConfigurationRepository.create_configuration(db, new_configuration_data=device_config)
-
-    updated_device_configid = new_device_obj.model_copy()
-    updated_device_configid.configId = new_config_id
-
-    updated_device = await DeviceRepository.edit_device_by_id(db, device_id=new_device_id,
-                                                              new_device_data=updated_device_configid)
+    # Create the new device record
+    new_device_id = await DeviceRepository.create_device(db, new_device_data=discovered_device_to_adopt)
 
     # Move device into network
     device_moved_to_net = await NetworkRepository.move_device_to_network(db,
-                                                                         device_id=new_device_obj.id,
+                                                                         device_id=new_device_id,
                                                                          initial_network_id=None,
-                                                                         target_network_id=new_device_obj.networkId)
+                                                                         target_network_id=discovered_device_to_adopt.networkId)
     if not device_moved_to_net:
+      await DeviceRepository.delete_device(db, device_id=new_device_id)
       raise http_exceptions.MOVE_DEVICE_TO_NET_FAILED
 
     return {'success': True, 'message': f'Dispositivo adotado.'}
@@ -133,28 +108,6 @@ async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = De
     raise h
   except Exception as e:
     raise http_exceptions.INTERNAL_ERROR(detail=str(e))
-
-async def generate_random_data():
-    """
-    Generates random value between 0 and 100
-
-    :return: String containing current timestamp (YYYY-mm-dd HH:MM:SS) and randomly generated data.
-    """
-
-    while True:
-        data = {
-              "y": random.random() * 100,
-              "x": datetime.now(tz=constants.LOCAL_TIMEZONE).isoformat(),
-            }
-        print(f'sent {data}')
-
-        yield f"event: new_message\ndata: {json.dumps(data)}\n\n"
-
-        await asyncio.sleep(10)
-
-@router.get('/chart-data')
-async def chart_data(request: Request):
-  return StreamingResponse(generate_random_data(), media_type='text/event-stream')
 
 @router.get('/{device_id}', status_code=status.HTTP_200_OK, response_model=Device, response_model_by_alias=False)
 async def get_device(device_id: str, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
@@ -171,140 +124,122 @@ async def get_device(device_id: str, current_user: User = Depends(get_current_us
   except Exception as e:
     raise http_exceptions.INTERNAL_ERROR(detail=str(e))
 
-@router.get('/{device_id}/config', status_code=status.HTTP_200_OK)
-async def get_device_config(device_id: str, filter: Literal['complete', 'wireless', 'system', 'services', 'network', 'andromeda'] | None = None,
-                            current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
+@router.post('/{device_id}/edit', status_code=status.HTTP_200_OK)
+async def edit_device(device_id: str, payload: DeviceUpdate, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
-    device_id = validate_id(target_id=device_id, id_field_name='device_id')
+    # Validate device_id
+    validated_device_id = validate_id(device_id, "device_id")
 
-    # Only users with guest_admin, admin and master permission can add devices
-    if current_user.permission not in (constants.USER_PERMISSIONS['guest_admin'],
-                                       constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
-      raise http_exceptions.NO_PERMISSION
-
-    existent_device = await DeviceRepository.get_device_by(db, field='_id', value=device_id)
+    # Fetch existing device
+    existent_device = await DeviceRepository.get_device_by(
+      db, field="_id", value=validated_device_id
+    )
     if not existent_device:
-      raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
+      raise http_exceptions.DOCUMENT_INEXISTENT(document="dispositivo")
 
-    # TODO: check device online status
+    if not payload.mac_address and not payload.ip_address:
+      raise http_exceptions.INVALID_FIELD(field="Endereco IP ou MAC")
 
-    # Fetch device config using requests
-    device_config = config_controller.get_device_config(device_info=existent_device, format='dict')
-    device_config_model = Configuration(configs=DeviceConfiguration(**device_config))
+    mac_changed = payload.mac_address is not None and payload.mac_address != existent_device.mac_address
+    ip_changed = payload.ip_address is not None and payload.ip_address != existent_device.ip_address
 
-    # Get db stored configs of device
-    stored_device_config = await ConfigurationRepository.get_configuration_by(db, field='_id', value=existent_device.configId)
+    if mac_changed or ip_changed:
+      # Check if new mac/ip is available in discovered devices list, block update if not
+      matched = adoption_controller.match_discovered_device(mac=payload.mac_address, ip=payload.ip_address)
+      if not matched:
+        raise http_exceptions.DEVICE_TO_ADOPT_NOT_FOUND
 
-    # If db configs are different of device fetched configs, update device and db config registries
-    if stored_device_config.config_hash != device_config_model.config_hash:
-      print(f'configs hashes are different --> stored: {stored_device_config.config_hash} / device: {device_config_model.config_hash}')
-      # Create device update instance in order to update device info changed in config
-      new_config_to_store = DeviceUpdate(wireless_configs=device_config_model.configs.wireless,
-                                         services_configs=device_config_model.configs.services,
-                                         network_configs=device_config_model.configs.network,
-                                         system_configs=device_config_model.configs.system,
-                                         andromeda_configs=device_config_model.configs.andromeda)
+    # Detect whether network/profile update is needed
+    network_update_needed = False
+    profile_update_needed = False
+    if payload.networkId:
+      validated_network_id = validate_id(payload.networkId, "network_id")
+      network = await NetworkRepository.get_network_by(db, field='_id', value=validated_network_id)
+      if not network:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document="rede")
+      network_update_needed = payload.networkId != existent_device.networkId
 
-      # --------------------- DEVICE UPDATE ---------------------
+    if payload.profileId:
+      validated_profile_id = validate_id(payload.profileId, "profile_id")
+      profile = await ProfileRepository.get_profile_by(db, field='_id', value=validated_profile_id)
+      if not profile:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document="profile")
+      profile_update_needed = payload.profileId != existent_device.profileId
 
-      validated_new_device = await DeviceRepository.validate_new_device_info(db, existent_device=existent_device,
-                                                                             new_device_data=new_config_to_store,
-                                                                             config_update_needed=True,
-                                                                             network_update_needed=False)
+    # Validate and merge updates
+    validated_device = await DeviceRepository.validate_new_device_info(
+      db=db,
+      existent_device=existent_device,
+      new_device_data=payload,
+      profile_update_needed=profile_update_needed,
+      network_update_needed=network_update_needed
+    )
 
-      updated_device = await DeviceRepository.edit_device_by_id(db, device_id=device_id,
-                                                                new_device_data=validated_new_device)
+    # If critical information for topology changed, lock db access for update
+    if mac_changed or ip_changed:
+      async with constants.DEVICE_UPDATE_LOCK:
+        updated_device = await DeviceRepository.edit_device_by_id(
+          db=db,
+          device_id=validated_device_id,
+          new_device_data=validated_device
+        )
+    else:
+      updated_device = await DeviceRepository.edit_device_by_id(
+        db=db,
+        device_id=validated_device_id,
+        new_device_data=validated_device
+      )
 
-      # --------------------- CONFIG UPDATE ---------------------
-
-      # Store new config to DB
-      stored_device_config = await ConfigurationRepository.edit_configuration_by_id(db,
-                                                                                    config_id=updated_device.configId,
-                                                                                    new_config=device_config_model.configs)
-
-    return device_config if filter in (None, 'complete') else device_config[filter]
+    return {
+      "success": True,
+      "message": "Dispositivo atualizado com sucesso.",
+    }
   except HTTPException as h:
     raise h
   except Exception as e:
     raise http_exceptions.INTERNAL_ERROR(detail=str(e))
 
-@router.put('/{device_id}/config', status_code=status.HTTP_201_CREATED)
-async def update_device_config(device_id: str, new_device_data: DeviceUpdate, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
-  try:
-    device_id = validate_id(target_id=device_id, id_field_name='device_id')
+@router.post(
+    '/{device_id}/execute-sequence',
+    status_code=status.HTTP_200_OK,
+    response_model=List[ActionSequenceResponse],
+    summary="Execute a sequence of 'manage' actions on a device"
+)
+async def execute_device_action_sequence(
+    device_id: str,
+    sequence: ActionSequencePayload,
+    current_user: User = Depends(get_current_user),
+    db: DB = Depends(get_db)
+):
+    try:
+      if current_user.permission not in (constants.USER_PERMISSIONS['guest_admin'],
+                                          constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
+        raise http_exceptions.NO_PERMISSION
 
-    # Only users with guest_admin, admin and master permission can add devices
-    if current_user.permission not in (constants.USER_PERMISSIONS['guest_admin'],
-                                       constants.USER_PERMISSIONS['admin'], constants.USER_PERMISSIONS['master']):
-      raise http_exceptions.NO_PERMISSION
+      device_id_obj = validate_id(target_id=device_id, id_field_name='device_id')
+      existent_device = await DeviceRepository.get_device_by(db, field='_id', value=device_id_obj)
+      if not existent_device:
+        raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
 
-    # DB stored device info
-    existent_device = await DeviceRepository.get_device_by(db, field='_id', value=device_id)
-    if not existent_device:
-      raise http_exceptions.DOCUMENT_INEXISTENT(document='dispositivo')
+      if not existent_device.profileId:
+        raise http_exceptions.DOCUMENT_INEXISTENT("Dispositivo não possui profile associado.")
 
-    # Check if networkId update is required, if so, check if network exists
-    network_update_needed = new_device_data.networkId != '' and new_device_data.networkId != existent_device.networkId
-    if network_update_needed and new_device_data.networkId and not await NetworkRepository.get_network_by(db, field='_id', value=new_device_data.networkId):
-      raise http_exceptions.DOCUMENT_INEXISTENT(document='nova rede do dispositivo')
+      profile = await ProfileRepository.get_profile_by(db, "_id", existent_device.profileId)
+      if not profile:
+        raise http_exceptions.DOCUMENT_INEXISTENT("Profile não encontrado.")
 
-    # Check if any configuration object was sent - config needed
-    config_update_needed = not all([x is None for x in [new_device_data.wireless_configs,
-                                                        new_device_data.network_configs,
-                                                        new_device_data.system_configs,
-                                                        new_device_data.services_configs,
-                                                        new_device_data.andromeda_configs]])
+      results: List[ActionSequenceResponse] = await ConfigController.execute_sequence(device=existent_device, profile=profile, sequence=sequence)
 
-    # Validate new device data/configs
-    validated_new_device = await DeviceRepository.validate_new_device_info(db, existent_device=existent_device,
-                                                                           new_device_data=new_device_data,
-                                                                           config_update_needed=config_update_needed,
-                                                                           network_update_needed=network_update_needed)
+      return results
 
-    # --------------------- DEVICE UPDATE ---------------------
-
-    updated_device = await DeviceRepository.edit_device_by_id(db, device_id=device_id,
-                                                              new_device_data=validated_new_device)
-
-    # --------------------- CONFIG UPDATE ---------------------
-
-    if config_update_needed:
-      # Fetch device config using requests
-      existent_device_config = config_controller.get_device_config(device_info=updated_device)
-
-      # Send new configs to device using new_device_data and requests
-      device_config_updated = config_controller.update_device_config(device_info=updated_device,
-                                                                     config_to_update=existent_device_config,
-                                                                     wireless_config=new_device_data.wireless_configs,
-                                                                     network_config=new_device_data.network_configs,
-                                                                     system_config=new_device_data.system_configs,
-                                                                     services_config=new_device_data.services_configs,
-                                                                     andromeda_config=new_device_data.andromeda_configs)
-
-      # Store new config to DB
-      stored_device_config = await ConfigurationRepository.edit_configuration_by_id(db,
-                                                                                    config_id=updated_device.configId,
-                                                                                    new_config=device_config_updated)
-
-    # --------------------- NETWORK UPDATE ---------------------
-    if network_update_needed:
-      moved_device_to_net = await NetworkRepository.move_device_to_network(db, device_id=updated_device.id,
-                                                                           initial_network_id=existent_device.networkId,
-                                                                           target_network_id=updated_device.networkId)
-      if not moved_device_to_net:
-        raise http_exceptions.MOVE_DEVICE_TO_NET_FAILED
-
-    return {'success': True, 'message': f'Configuração atualizada.'}
-  except HTTPException as h:
-    raise h
-  except Exception as e:
-    raise http_exceptions.INTERNAL_ERROR(detail=str(e))
-
-
-@router.get('/statistics', status_code=status.HTTP_201_CREATED)
-async def get_statistics(current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
-  # TODO
-  pass
+    except HTTPException as h:
+      raise h
+    except Exception as e:
+      return [ActionSequenceResponse(
+        action="setup",
+        status="failed",
+        message=f"Erro ao preparar execução: {e}"
+      )]
 
 @router.delete('/{device_id}/delete', status_code=status.HTTP_201_CREATED)
 async def delete_device(device_id: str, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
@@ -318,10 +253,6 @@ async def delete_device(device_id: str, current_user: User = Depends(get_current
 
     # Delete device document
     deleted_device = await DeviceRepository.delete_device(db, device_id=device_id)
-
-    deleted_config = await ConfigurationRepository.delete_config_by_device_id(db, device_id=deleted_device.id)
-    if not deleted_config:
-      raise http_exceptions.CONFIG_ACTION_FAILED(action='apagar')
 
     # If device has a network, remove device from it
     if deleted_device.networkId is not None:

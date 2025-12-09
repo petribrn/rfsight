@@ -13,6 +13,7 @@ export type OrganizationRow = {
   numberOfUsers: number;
   numberOfNetworks: number;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type OrganizationCollection = {

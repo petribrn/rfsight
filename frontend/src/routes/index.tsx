@@ -1,4 +1,3 @@
-import { Typography } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   DashboardPage,
@@ -6,11 +5,13 @@ import {
   DevicesPage,
   ForgotPasswordPage,
   NetworksPage,
+  OrganizationsPage,
   ProfilesPage,
-  RegisterPage,
   ResetPasswordPage,
+  UsersPage
 } from '../pages';
 import { AuthPage } from '../pages/Auth';
+import { ManageUserPage } from '../pages/ManageUser';
 import {
   PageWithSideMenu,
   PersistLogin,
@@ -27,7 +28,7 @@ export default function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/auth" element={<AuthPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      {/* <Route path="/register" element={<RegisterPage />} /> */}
       <Route path="/forgot-password/" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
@@ -39,6 +40,7 @@ export default function AppRoutes() {
                 Permissions.Guest,
                 Permissions.GuestAdmin,
                 Permissions.GuestMonitor,
+                Permissions.Monitor,
                 Permissions.Admin,
                 Permissions.Master,
               ]}
@@ -52,12 +54,6 @@ export default function AppRoutes() {
           <Route
             path="/networks"
             element={<PageWithSideMenu pageContent={<NetworksPage />} />}
-          />
-          <Route
-            path="/configure"
-            element={
-              <PageWithSideMenu pageContent={<Typography>Configure</Typography>} />
-            }
           />
           <Route
             path="/devices"
@@ -74,21 +70,39 @@ export default function AppRoutes() {
           <Route
             path="/users"
             element={
-              <PageWithSideMenu pageContent={<Typography>Users</Typography>} />
+              <PageWithSideMenu pageContent={<UsersPage />} />
             }
           />
           <Route
             path="/organizations"
             element={
               <PageWithSideMenu
-                pageContent={<Typography>Organizations</Typography>}
+                pageContent={<OrganizationsPage />}
               />
             }
           />
+        </Route>
+        <Route
+          element={
+            <PrivateRoutes
+              allowedPermissions={[
+                Permissions.GuestAdmin,
+                Permissions.Admin,
+                Permissions.Master,
+              ]}
+            />
+          }
+        >
           <Route
-            path="/devices/:deviceId/configure"
+            path="/devices/:networkId/:deviceId/configure"
             element={
               <PageWithSideMenu pageContent={<DeviceConfigurationPage />} />
+            }
+          />
+          <Route
+            path="/users/:username"
+            element={
+              <PageWithSideMenu pageContent={<ManageUserPage />} />
             }
           />
         </Route>

@@ -1,10 +1,13 @@
 import { ApiRoutes } from '../../../ts/enums';
 import { normalizeApiError } from '../../../ts/helpers';
-import { INewProfilePayload, IProfileUpdatePayload } from '../../../ts/interfaces/profile.interfaces';
+import {
+  INewProfilePayload,
+  IProfileUpdatePayload,
+} from '../../../ts/interfaces/profile.interfaces';
 import {
   DefaultResponse,
   ProfileCollection,
-  ProfileData
+  ProfileData,
 } from '../../../ts/types';
 import { apiSlice } from '../api/apiSlice';
 
@@ -37,21 +40,19 @@ export const profileApiSlice = apiSlice.injectEndpoints({
         return normalizeApiError(baseQueryReturnValue);
       },
     }),
-    getProfilesCollection: builder.query<ProfileCollection, void>(
-      {
-        query: () => {
-          return {
-            url: `${ApiRoutes.Profiles}`,
-            method: 'GET',
-            credentials: 'include',
-          };
-        },
-        providesTags: ['Profile'],
-        transformErrorResponse(baseQueryReturnValue) {
-          return normalizeApiError(baseQueryReturnValue);
-        },
-      }
-    ),
+    getProfilesCollection: builder.query<ProfileCollection, void>({
+      query: () => {
+        return {
+          url: `${ApiRoutes.Profiles}`,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Profile'],
+      transformErrorResponse(baseQueryReturnValue) {
+        return normalizeApiError(baseQueryReturnValue);
+      },
+    }),
     getProfileById: builder.query<ProfileData, string>({
       query: (profileId) => {
         return {
@@ -73,7 +74,7 @@ export const profileApiSlice = apiSlice.injectEndpoints({
           body: { ...profileUpdatePayload.newProfileData },
         };
       },
-      invalidatesTags: ['Network'],
+      invalidatesTags: ['Profile'],
       transformErrorResponse(baseQueryReturnValue) {
         return normalizeApiError(baseQueryReturnValue);
       },

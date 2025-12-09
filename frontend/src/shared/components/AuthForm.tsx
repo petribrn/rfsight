@@ -20,8 +20,11 @@ import {
   setCredentials,
   togglePersist,
 } from '../store/slices/auth/authSlice';
+import { useGetUserOrganizationPostAuthMutation } from '../store/slices/organization/organizationApiSlice';
+import { setOrganizationInfo } from '../store/slices/organization/organizationSlice';
 import { useGetUserInfoPostAuthMutation } from '../store/slices/user/userApiSlice';
 import { setUserInfo } from '../store/slices/user/userSlice';
+import { websocketUrl } from '../ts/enums';
 import { DefaultApiError } from '../ts/interfaces';
 import { FormPaper } from './styled/FormPaper';
 
@@ -32,6 +35,7 @@ export const AuthForm = () => {
   const persist: boolean = useAppSelector(selectCurrentPersistState);
   const [getUserInfoPostAuth, { isLoading: isLoadingUserInfo }] =
     useGetUserInfoPostAuthMutation();
+  const [getUserOrganizationPostAuth, {isLoading: isLoadingUserOrganization}] = useGetUserOrganizationPostAuthMutation();
   const theme = useTheme();
 
   const [login, { isLoading }] = useLoginMutation();
@@ -48,7 +52,7 @@ export const AuthForm = () => {
     try {
       // Send login payload and get token
       const loginResponse = await login({
-        username: user.toLowerCase(),
+        username: user,
         password: passwd,
       }).unwrap();
       dispatch(
@@ -56,7 +60,13 @@ export const AuthForm = () => {
       );
       // Get user complete info and populate state
       const userInfoResponse = await getUserInfoPostAuth(user).unwrap();
+      const userOrganization = await getUserOrganizationPostAuth(userInfoResponse.id).unwrap()
       dispatch(setUserInfo(userInfoResponse));
+      dispatch(setOrganizationInfo(userOrganization));
+      dispatch({
+        type: "websocket/connect",
+        payload: { url: websocketUrl },
+      })
       setUser('');
       setPasswd('');
       await toast.success('Login efetuado com sucesso.');

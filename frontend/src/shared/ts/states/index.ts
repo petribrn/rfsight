@@ -1,5 +1,5 @@
 export * from './auth.states';
-export * from './device.states';
+export * from './jsonEditor.states';
 export * from './network.states';
 export * from './organization.states';
 export * from './sideMenu.states';

@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.database.db import DB, get_db
 from src.models.Network import Network, NetworkUpdate
 from src.models.User import User
-from src.repositories.configuration import ConfigurationRepository
 from src.repositories.device import DeviceRepository
 from src.repositories.network import NetworkRepository
 from src.repositories.organization import OrganizationRepository
@@ -26,6 +25,8 @@ async def networks(current_user: User = Depends(get_current_user), db: DB = Depe
 @router.get('/list', status_code=status.HTTP_200_OK)
 async def networks_list(organizationId: str, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
+    if organizationId:
+      organizationId = validate_id(target_id=organizationId, id_field_name='organizationId')
     networks = await NetworkRepository.list_networks_by_filter(db, organizationId=organizationId)
     return networks.model_dump(by_alias=False)
   except HTTPException as h:
@@ -128,7 +129,7 @@ async def edit_network(network_id: str, new_network_data: NetworkUpdate, current
         raise http_exceptions.MOVE_ITEM_TO_ORGANIZATION_FAILED(item_type='rede')
     # --------------------- ORGANIZATION RELATED ---------------------
 
-    return {'success': True, 'message': f'Rede {network_id} atualizada.'}
+    return {'success': True, 'message': f'Rede atualizada.'}
   except HTTPException as h:
     raise h
   except Exception as e:
@@ -156,16 +157,7 @@ async def delete_network(network_id: str, current_user: User = Depends(get_curre
     if not removed_adopted_devices:
         raise http_exceptions.REMOVE_DEVICE_FROM_NET_FAILED
 
-    deleted_configs = await ConfigurationRepository.delete_config_of_devices_list(db, devices_list=devices_ids_list)
-    if not deleted_configs:
-      raise http_exceptions.CONFIG_ACTION_FAILED(action='apagar')
-
-    # USE THIS LOGIC TO MIGRATE TO ANOTHER NETWORK
-    # removed_devices_net = await DeviceRepository.remove_devices_network(db, network_id=network_id)
-    # if not removed_devices_net:
-    #     raise http_exceptions.REMOVE_DEVICE_FROM_NET_FAILED
-
-    return {'success': True, 'message': f'Rede {deleted_network.id} deletada.'}
+    return {'success': True, 'message': f'Rede removida.'}
   except HTTPException as h:
     raise h
   except Exception as e:

@@ -1,29 +1,41 @@
-# import src.shared.http_exceptions as http_exceptions
-# from bson import ObjectId
-# from fastapi import APIRouter, Depends, HTTPException, Request, status
-# from fastapi.responses import StreamingResponse
-# from src.controllers.monitor.MonitorController import MonitorController
-# from src.database.db import DB, get_db
-# from src.repositories.device import DeviceRepository
-# from src.repositories.network import NetworkRepository
+from bson import ObjectId
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from src.services.oauth import verify_token
+from src.services.websocket_conn_manager import websocket_connection_manager
 
-# router = APIRouter(prefix='/monitor', tags=['monitor', 'statistics'])
+router = APIRouter(prefix='/monitor', tags=['monitor'])
 
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    # Accept to get token
+    await websocket_connection_manager.connect(websocket)
 
+    token = websocket.query_params.get("token")
 
+    if not token:
+      await websocket.close(1008)
+      websocket_connection_manager.disconnect(websocket)  # Unauthorized
+      return
 
-# @router.get('/{network_id}/devices-status', status_code=status.HTTP_200_OK)
-# async def monitor_devices_status(network_id: str, request: Request, db: DB = Depends(get_db)):
-#   try:
-#     existent_network = await NetworkRepository.get_network_by(db, field='_id', value=network_id)
-#     if not existent_network:
-#       raise http_exceptions.DOCUMENT_INEXISTENT(document='rede')
+    # Verify token
+    try:
+        token_data = verify_token(token, token_mode="access_token")
+    except Exception:
+      await websocket.close(1008)
+      websocket_connection_manager.disconnect(websocket)
+      return
 
-#     devices_ids = [ObjectId(x) for x in existent_network.devices]
-#     all_network_devices_info = await DeviceRepository.get_all_devices_from_list(db, list_of_devices=devices_ids)
-#     monitorController = MonitorController(all_network_devices_info.devices)
-#     return StreamingResponse(monitorController.check_devices_status(), media_type='text/event-stream')
-#   except HTTPException as h:
-#     raise h
-#   except Exception as e:
-#     raise http_exceptions.INTERNAL_ERROR(detail=str(e))
+    # Check user
+    db = websocket.app.state.db
+    user_data = await db.user_collection.find_one({"_id": ObjectId(token_data.sub)})
+
+    if not user_data:
+      await websocket.close(1008)
+      websocket_connection_manager.disconnect(websocket)
+      return
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_connection_manager.disconnect(websocket)
