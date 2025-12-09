@@ -9,13 +9,13 @@
 <a href="https://github.com/petribrn" target="_blank">Author</a>
 </p>
 
-##:dart: About
+## :dart: About
 
 RFSight is a prototype network device management system designed specifically for Regional Internet Service Providers (ISPs) operating with radio frequency (RF) technologies.
 
 Developed as a Bachelor's degree completion project at UFSC (Universidade Federal de Santa Catarina), RFSight addresses the challenge of Vendor Lock-in by implementing a Hardware Abstraction Layer. This allows ISPs to manage heterogeneous networks composed of multi-vendor equipment (such as Intelbras, Ubiquiti, Mikrotik, and White Label devices) through a unified, agnostic interface without the need for code refactoring.
 
-##:sparkles: Features
+## :sparkles: Features
 
 :heavy_check_mark: Agnostic Device Adoption: Identifies and registers devices on the network via ARP scan (L2), using configurable Profiles to abstract API differences between manufacturers;
 
@@ -27,7 +27,7 @@ Developed as a Bachelor's degree completion project at UFSC (Universidade Federa
 
 :heavy_check_mark: Declarative Profiles: Configurable JSON files that teach the system how to communicate with new device models (No-Code Integration).
 
-##:rocket: Technologies
+## :rocket: Technologies
 
 The following tools were used in this project:
 
@@ -52,7 +52,7 @@ Additionally, for the system to fully function (especially remote access and sec
 
   ![Duck DNS Config](./assets/duckdns.png)
 
-####2. Nginx Proxy Manager:
+#### 2. Nginx Proxy Manager:
 
   * [Nginx Proxy Manager](https://nginxproxymanager.com/guide/) is one of the containers that support RFSight, acting as a Gateway and Reverse Proxy to manage HTTP/HTTPS traffic.
   * Handles SSL termination.
@@ -63,7 +63,7 @@ Additionally, for the system to fully function (especially remote access and sec
   ![Proxy Hosts config](./assets/proxy-hosts.png)
 
 
-##1. Clone the project
+## 1. Clone the project
 
 ```
 $ git clone [https://github.com/petribrn/rfsight](https://github.com/petribrn/rfsight)
@@ -72,7 +72,7 @@ $ git clone [https://github.com/petribrn/rfsight](https://github.com/petribrn/rf
 $ cd rfsight
 ```
 
-##2. Start the system
+## 2. Start the system
 
 The project includes helper scripts for easy management:
 
@@ -97,7 +97,7 @@ $ ./stop.sh
 ```
 
 
-##3. Access the System
+## 3. Access the System
 
 After initialization, the services will be available at:
 
@@ -113,7 +113,7 @@ MongoAdmin: http://localhost:3046 (only from localhost)
 SMTP4Dev (Emails): http://localhost:5400 (only from localhost)
 ```
 
-##:file_folder: Project Architecture
+## :file_folder: Project Architecture
 
 * backend/src/controllers/: Orchestration logic.
 
@@ -131,6 +131,6 @@ SMTP4Dev (Emails): http://localhost:5400 (only from localhost)
 
   * middleware/websocketMiddleware.ts: Manages persistent connection and server message routing.
 
-Made by <a href="https://github.com/petribrn" target="_blank">petribrn</a>
+Made by <a href="https://github.com/petribrn" target="_blank">Bruno Petri</a>
 
 <a href="#top">Back to top</a>
