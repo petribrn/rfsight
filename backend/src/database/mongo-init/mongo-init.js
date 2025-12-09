@@ -53,7 +53,7 @@ db.users.insertOne({
     email: "root@rfsight.com",
     firstName: "Root",
     lastName: "RFSight",
-    password: "$2b$12$jpp6qonFoSUq12N82JS.R.aIAac5FQPug2qGhUd1iOR1wpitZOX1S",
+    password: "{{PASSWORD_HASH}}",
     permission: 5,
     organizationId: orgId,
     createdAt: now,
