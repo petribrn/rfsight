@@ -45,7 +45,7 @@ You need to have [Git](https://git-scm.com/), [Python](https://www.python.org/) 
 
 Additionally, for the system to fully function (especially remote access and secure features like WSS), the following external infrastructure setup is required:
 
-####1. DuckDNS (or similar):
+#### 1. DuckDNS (or similar):
 
   * Required to provide secure connection, combined with SSL certificate managed in a proxy.
   * Create an account at [duckdns.org](https://duckdns.org) and configure a domain pointing to the local RFSight host IP address (e.g., rfsight.duckdns.org -> 15.0.0.10).
