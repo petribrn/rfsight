@@ -75,9 +75,7 @@ async def forgot_password(forget_password_payload: ForgetPasswordPayload, reques
     reset_data = {'sub': user_model.email}
     reset_password_token = oauth.create_reset_passwd_token(data=reset_data)
 
-    request_host = request.headers.get('HOST')
-
-    forget_passwd_link = f'https://{request_host}/reset-password/{reset_password_token}'
+    forget_passwd_link = f'https://{constants.UI_HOST}/reset-password/{reset_password_token}'
 
     email_body = {"firstName": user_model.firstName,
                   "linkExpireTime": constants.RESET_PASSWORD_EXPIRE_MINUTES,

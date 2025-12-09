@@ -25,6 +25,8 @@ async def networks(current_user: User = Depends(get_current_user), db: DB = Depe
 @router.get('/list', status_code=status.HTTP_200_OK)
 async def networks_list(organizationId: str, current_user: User = Depends(get_current_user), db: DB = Depends(get_db)):
   try:
+    if organizationId:
+      organizationId = validate_id(target_id=organizationId, id_field_name='organizationId')
     networks = await NetworkRepository.list_networks_by_filter(db, organizationId=organizationId)
     return networks.model_dump(by_alias=False)
   except HTTPException as h:

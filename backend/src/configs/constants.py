@@ -11,6 +11,7 @@ load_dotenv()
 
 API_HOST = os.getenv('API_HOST')
 API_PORT = int(os.getenv('API_PORT'))
+UI_HOST = os.getenv('UI_HOST')
 
 SECRET_KEY = os.getenv('SECRET_KEY') # openssl rand -hex 32
 ALGORITHM = os.getenv('ALGORITHM')

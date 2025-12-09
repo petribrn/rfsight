@@ -986,7 +986,7 @@ export const ActionDialog = ({
                     </CardContent>
                   </Card>
                 </Box>
-                <Box>
+                {currentActionData.httpDetails.responseType === 'text/json' && <Box>
                   <Typography variant="body2" gutterBottom>
                     Mapeamento da Resposta (Opcional)
                   </Typography>
@@ -1130,7 +1130,7 @@ export const ActionDialog = ({
                       )}
                     </CardContent>
                   </Card>
-                </Box>
+                </Box>}
               </>
             )}
 

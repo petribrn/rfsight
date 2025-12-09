@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 
+import src.configs.constants as constants
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
@@ -33,7 +34,7 @@ app.include_router(networks.router)
 app.include_router(monitor.router)
 
 origins = [
-    'https://ui.rfsight.duckdns.org'
+    f'https://{constants.UI_HOST}'
 ]
 
 app.add_middleware(

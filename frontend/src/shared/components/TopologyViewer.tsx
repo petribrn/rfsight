@@ -1,3 +1,4 @@
+import LanIcon from '@mui/icons-material/Lan';
 import {
   Background,
   Controls,
@@ -8,7 +9,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { Skeleton, useTheme } from '@mui/material';
+import { alpha, Box, Skeleton, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 
 
@@ -103,20 +104,29 @@ export const TopologyViewer = ({ graph }: Props) => {
 
   if (!graph.nodes || graph.nodes.length === 0) {
     return (
-      <div
-        style={{
-          height: 450,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid #e0e0e0',
-          borderRadius: 8,
-          background: '#fafafa',
-          color: '#777',
-        }}
+      <Box
+        width={'100%'}
+        height={'100%'}
+        display={'flex'}
+        flexDirection={'column'}
+        alignItems={'center'}
+        justifyContent={'center'}
+        justifyItems={'center'}
       >
-        No topology available for this network.
-      </div>
+        <Typography
+          variant="button"
+          fontSize={'small'}
+          color={alpha(theme.palette.text.primary, 0.5)}
+        >
+          Não há dados de topologia no momento
+        </Typography>
+        <LanIcon
+          fontSize="small"
+          sx={{
+            fill: alpha(theme.palette.text.primary, 0.5),
+          }}
+        />
+      </Box>
     );
   }
 

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Tuple
 
 import src.configs.constants as constants
+from bson import ObjectId
 from fastapi import FastAPI, HTTPException
 from src.models.Device import Device
 from src.models.Monitor import ActionStatus, DeviceMonitorUpdate
@@ -99,6 +100,38 @@ class MonitorController:
               stats, actions_statuses = res
               monitor_updates[dev_id_str].stats = stats
               monitor_updates[dev_id_str].actionsStatuses = actions_statuses
+
+              device_obj = next((d for d in updated_device_list.devices if str(d.id) == dev_id_str), None)
+
+              if device_obj and stats:
+                updates = {}
+
+                if 'fw_version' in stats and stats['fw_version'] and stats['fw_version'] != device_obj.fw_version:
+                  updates['fw_version'] = stats['fw_version']
+
+                if 'model' in stats and stats['model'] and stats['model'] != device_obj.model:
+                  updates['model'] = stats['model']
+
+                if 'name' in stats and stats['name'] and stats['name'] != device_obj.name:
+                  updates['name'] = stats['name']
+
+                if 'location' in stats and stats['location'] and stats['location'] != device_obj.location:
+                  updates['location'] = stats['location']
+
+                if updates:
+                  try:
+                    print(f"Syncing device {dev_id_str} data with DB: {updates}")
+                    device_to_update = device_obj.model_copy(update=updates)
+
+                    async with constants.DEVICE_UPDATE_LOCK:
+                      await DeviceRepository.edit_device_by_id(
+                        db=db,
+                        device_id=ObjectId(dev_id_str),
+                        new_device_data=device_to_update
+                      )
+                  except Exception as e:
+                    print(f"Failed to sync device {dev_id_str} to DB: {e}")
+
 
           # Broadcast through ws the final list of updates from monitoring
           final_update_list = [update.model_dump() for update in monitor_updates.values()]

@@ -205,6 +205,8 @@ export const ProfileDialog = ({
         return false;
       }
 
+      console.log(profilePayload);
+
       try {
         const editedProfile = await editProfile(profilePayload).unwrap();
         if (editedProfile) toast.success(editedProfile.message);
@@ -297,7 +299,7 @@ export const ProfileDialog = ({
         <Box display="flex" flexDirection="column" mt={2}>
           <TextField
             id="apiBaseUrl"
-            label="API Base URL"
+            label="URL Base da API"
             variant="outlined"
             size='small'
             fullWidth

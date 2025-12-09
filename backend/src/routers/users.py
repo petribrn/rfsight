@@ -22,13 +22,13 @@ async def users(current_user: User = Depends(get_current_user), db: DB = Depends
     org_ids = list({u.get("organizationId") for u in users if u.get("organizationId")})
 
     # consultar todas as orgs em uma unica query
-    org_map = await OrganizationRepository.get_organizations_by_ids(db, org_ids)
+    org_map = await OrganizationRepository.get_organizations_by_ids(db, [ObjectId(orgId) for orgId in org_ids])
 
     # montar resposta
     result = []
     for u in users:
       org_info = None
-      org_id = u.get("organizationId")
+      org_id = str(u.get("organizationId"))
 
       if org_id and org_id in org_map:
         org_info = {

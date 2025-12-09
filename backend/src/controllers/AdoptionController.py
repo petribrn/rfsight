@@ -88,7 +88,10 @@ class AdoptionController:
       if isinstance(res, Exception):
         print(f"Adoção: Ação '{action_name}' falhou: {res}")
       elif isinstance(res, dict):
-        all_mapped_data.update(res)
+        if 'actionResponse' in res:
+          all_mapped_data.update(res['actionResponse'])
+        else:
+          all_mapped_data.update(res)
       else:
         print(f"Adoção: Ação '{action_name}' não retornou um dict mapeado.")
 

@@ -89,6 +89,8 @@ async def adopt_device(device_adopt_data: DeviceToAdopt, current_user: User = De
     # Search for device and get initial info
     discovered_device_to_adopt = await adoption_controller.find_device(device=device_adopt_data, db=db)
 
+    print(f'Discovery: {discovered_device_to_adopt}')
+
     # Create the new device record
     new_device_id = await DeviceRepository.create_device(db, new_device_data=discovered_device_to_adopt)
 

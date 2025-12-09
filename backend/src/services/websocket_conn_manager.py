@@ -4,7 +4,7 @@ from typing import Any, List
 from fastapi import WebSocket
 
 
-class ConnectionManager:
+class WebSocketConnectionManager:
     """
     Manages active WebSocket connections.
     """
@@ -30,4 +30,4 @@ class ConnectionManager:
                 # Client disconnected uncleanly
                 self.active_connections.remove(connection)
 
-websocket_connection_manager = ConnectionManager()
+websocket_connection_manager = WebSocketConnectionManager()

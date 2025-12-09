@@ -211,16 +211,19 @@ export const DeviceActionExecutor: React.FC<Props> = ({ device, profile }) => {
     switch (payloadType) {
       case 'text/json':
         return (
-          <>
+          <Box width={'100%'} display={'flex'} flexDirection={'column'}>
             <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 1 }}>
               Esta ação requer um payload JSON.
             </Typography>
-            <JsonPayloadEditor
-              data={jsonPayload || {}}
-              setData={(d) => setJsonPayload(d as object)}
-              collapse={false}
-            />
-          </>
+            <Box display={'flex'} maxHeight={'40vh'} overflow={'auto'} width={'100%'}>
+              <JsonPayloadEditor
+                data={jsonPayload || {}}
+                setData={(d) => setJsonPayload(d as object)}
+                collapse={false}
+              />
+            </Box>
+
+          </Box>
         );
       case 'text/plain':
         return (

@@ -40,6 +40,7 @@ export const NetworkGraphWrapper = ({ organizationId, network }: IProps) => {
   useEffect(() => {
     isLoading = !networkMetrics || !graph;
   }, [networkMetrics, graph])
+
   return (network.devices.length > 0 ? (<>
       <DashboardAccordion defaultExpanded id={`general-info-${network.id}`} title="Informações gerais da rede">
         {!isLoading && <Grid container justifyContent={'center'} alignItems={'center'} spacing={1} columns={{xs: 1, sm: 2, md: 2, lg: 12}}>
@@ -58,7 +59,7 @@ export const NetworkGraphWrapper = ({ organizationId, network }: IProps) => {
         id="general-info"
         title="Topologia da rede"
       >
-        {!devicesLoading && !isLoading && <Box display={'flex'} height={'40vh'} width={'100%'} mb={2}>
+        {!devicesLoading && !isLoading && <Box display={'flex'} height={'35vh'} width={'100%'} mb={2}>
           <TopologyViewer graph={graph}></TopologyViewer>
         </Box>}
         {isLoading && <Box display={'flex'} height={'100%'} width={'100%'} justifyContent={'center'} alignItems={'center'}>

@@ -71,6 +71,14 @@ class ProfileRepository:
       updated_profile.name = profile_update_data.name
       need_update = True
 
+    if profile_update_data.apiBaseUrl:
+      updated_profile.apiBaseUrl = profile_update_data.apiBaseUrl
+      need_update = True
+
+    if profile_update_data.stationTable:
+      updated_profile.stationTable = profile_update_data.stationTable
+      need_update = True
+
     if profile_update_data.actions:
       updated_profile.actions = profile_update_data.actions
       need_update = True

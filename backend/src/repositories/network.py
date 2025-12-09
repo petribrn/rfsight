@@ -149,8 +149,9 @@ class NetworkRepository:
     if not network_existent:
       return True
 
-    device_to_remove = await db.networks_collection.find_one({'_id': network_id, 'devices' : {'$in': [device_id]} })
+    device_to_remove = await db.networks_collection.find_one({'_id': network_id, 'devices': {'$in': [device_id]} })
     if not device_to_remove:
+      print('no device to remove')
       return True
 
     removed_device = await db.networks_collection.update_one({'_id': network_id}, {'$pull': {'devices': {'$in': [device_id]}}})
